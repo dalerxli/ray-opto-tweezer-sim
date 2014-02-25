@@ -10,6 +10,8 @@ double snell(double thi, double nr)
 
 // Fresnel reflection coefficient for circularly polarized light. nr is the
 // relative index
+
+// TODO: add polarization.
 double R_Fresnel(double thi, double nr)
 {
     #ifdef DISABLE_REFLECTION
