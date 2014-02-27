@@ -28,21 +28,29 @@ int main(int argc, char* argv[])
     
     // The limits of integration for x (radial position of particle) IN TERMS OF
     // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double x_final = dblarg(8)*sph_r;
-    const double x_steps = dblarg(9);
+    const double x_init = dblarg(8)*sph_r;
+    const double x_final = dblarg(9)*sph_r;
+    const double x_steps = dblarg(10);
     
     // The limits of integration for z (axial position of particle) IN TERMS OF
     // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double z_init = dblarg(10)*sph_r;
-    const double z_final = dblarg(11)*sph_r;
-    const double z_steps = dblarg(12);
+    const double y_init = dblarg(11)*sph_r;
+    const double y_final = dblarg(12)*sph_r;
+    const double y_steps = dblarg(13);
+    
+    // The limits of integration for z (axial position of particle) IN TERMS OF
+    // PARTICLE RADIUS. The particle position is relative to the focus.
+    const double z_init = dblarg(14)*sph_r;
+    const double z_final = dblarg(15)*sph_r;
+    const double z_steps = dblarg(16);
     
     // Calculate the differentials
     const double dr = 1/r_steps;
     const double dth = 2*M_PI/th_steps;
     
-    const double dx = x_final/x_steps;
-    const double dz = z_final/z_steps;
+    const double dx = (x_final-x_init)/x_steps;
+    const double dy = (y_final-y_init)/y_steps;
+    const double dz = (z_final-z_init)/z_steps;
     
     Sphere s = Sphere();
     Lens l = Lens();
@@ -59,21 +67,27 @@ int main(int argc, char* argv[])
     
     Vector3d force;
     
-    for (double z=0; z <= z_final; z += dz)
+    for (double x=x_init; x <= x_final; x += dx)
     {
-        for (double x=0; x <= x_final; x += dx)
+        for (double y=y_init; y <= y_final; y += dy)
         {
-            force = Vector3d(0,0,0);
-            l.set_lens_pos(Vector3d(-x,0,df-z));
-            for (double r=0; r<=1; r+= dr)
-            {
-                for (double th = 0; th <= 2*M_PI; th+= dth)
-                {
-                    force += s.get_force(l.get_ray(r, th))*dr*dth;
-                }
-            }
-            printf("%e %e %e %e\n", x, z, force[0], force[2]);
+        	for (double z=z_init; z <= z_final; z += dz)
+     	   	{
+		        force = Vector3d(0,0,0);
+		        l.set_lens_pos(Vector3d(-x,0,df-z));
+		        for (double r=0; r<=1; r+= dr)
+		        {
+		            for (double th = 0; th <= 2*M_PI; th+= dth)
+		            {
+		                force += s.get_force(l.get_ray(r, th))*dr*dth;
+		            }
+		        }
+		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
+		        if (z_init == z_final) break;
+	        }
+	        if (y_init == y_final) break;
         }
+        if (x_init == x_final) break;
     }
     
     return 0;
