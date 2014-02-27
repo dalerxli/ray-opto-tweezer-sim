@@ -67,11 +67,18 @@ int main(int argc, char* argv[])
     
     Vector3d force;
     
-    for (double x=x_init; x <= x_final; x += dx)
+    // Add tolerance to the comparations so that the rounding errors don't
+    // influence the quantity of cycles.
+    
+    double tolx = (x_final - x_init)/1e4;
+    double toly = (y_final - y_init)/1e4;
+    double tolz = (z_final - z_init)/1e4;
+    
+    for (double x=x_init; x <= x_final+tolx; x += dx)
     {
-        for (double y=y_init; y <= y_final; y += dy)
+        for (double y=y_init; y <= y_final+toly; y += dy)
         {
-        	for (double z=z_init; z <= z_final; z += dz)
+        	for (double z=z_init; z <= z_final+tolz; z += dz)
      	   	{
 		        force = Vector3d(0,0,0);
 		        l.set_lens_pos(Vector3d(-x,0,df-z));
@@ -85,8 +92,10 @@ int main(int argc, char* argv[])
 		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
 		        if (z_init == z_final) break;
 	        }
+	        printf("\n");
 	        if (y_init == y_final) break;
         }
+        printf("\n");
         if (x_init == x_final) break;
     }
     
