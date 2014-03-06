@@ -25,19 +25,19 @@ th_steps = 100;
 # PARTICLE RADIUS. The particle position is relative to the focus.
 x_init = 0;
 x_final = 1;
-x_steps = 50;
+x_steps = 10;
 
 # The limits of integration for x (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 y_init = 0;
-y_final = 0;
-y_steps = 50;
+y_final = 1;
+y_steps = 3;
 
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 z_init = 0;
 z_final = 1;
-z_steps = 50;
+z_steps = 10;
 
 # List of arguments
 args_list = [

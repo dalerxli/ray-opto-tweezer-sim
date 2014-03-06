@@ -2,9 +2,14 @@
 
 #define dblarg(x) atof(argv[x])
 
+// Total laser power in Watts
+const double las_pow = 100e-3;
+
+// Since we accept normalized r, the beam width dowsn't appear 
 double intens(double r, double th)
 {
-    return exp(-pow(r, 2));
+	const double I0 = 2*las_pow/(M_PI); 
+    return I0*exp(-pow(r, 2));
 }
 
 int main(int argc, char* argv[])

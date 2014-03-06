@@ -3,6 +3,9 @@
 *.lo
 *.o
 
+# Compiled application
+app
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -11,3 +14,12 @@
 *.lai
 *.la
 *.a
+
+# Generated data files
+*.tsv
+*.csv
+
+# Generated images
+*.jpg
+*.png
+*.gif

@@ -53,7 +53,10 @@ void Lens::set_df(double df)
 Ray& Lens::get_ray(double rn, double th)
 {
     double r = rn * this->radius;
+    
+    // Return the ray's "power" (to be multiplied  by dr*dth later)
     double P = rn * this->intensity_f(rn, th);
+    
     Vector3d polar = r*Vector3d(cos(th), sin(th), 0);
     
     this->current_ray.set_vect(this->lens_pos+polar, this->focus_pos);
