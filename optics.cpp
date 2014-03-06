@@ -60,7 +60,7 @@ Ray& Lens::get_ray(double rn, double th)
     Vector3d polar = r*Vector3d(cos(th), sin(th), 0);
     
     this->current_ray.set_vect(this->lens_pos+polar, this->focus_pos);
-    this->current_ray.set_power(r*P);
+    this->current_ray.set_power(P);
     
     return this->current_ray;
 }

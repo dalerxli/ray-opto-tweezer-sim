@@ -35,9 +35,9 @@ y_steps = 3;
 
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
-z_init = -2;
-z_final = 2;
-z_steps = 1000;
+z_init = -1;
+z_final = 1;
+z_steps = 100;
 
 # List of arguments
 args_list = [
