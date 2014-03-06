@@ -10,7 +10,7 @@ exec_path = ["./app"]
 lens_r = 2e-3;
 
 # The lens focal distance
-df = 1e-3;
+df = 0.5e-3;
 
 # Radius, external index and internal index of the sphere
 sph_r = 10e-6;
@@ -24,20 +24,20 @@ th_steps = 100;
 # The limits of integration for x (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 x_init = 0;
-x_final = 1;
-x_steps = 10;
+x_final = 0;
+x_steps = 100;
 
-# The limits of integration for x (radial position of particle) IN TERMS OF
+# The limits of integration for y (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 y_init = 0;
-y_final = 1;
+y_final = 0;
 y_steps = 3;
 
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
-z_init = 0;
-z_final = 1;
-z_steps = 10;
+z_init = -2;
+z_final = 2;
+z_steps = 1000;
 
 # List of arguments
 args_list = [
@@ -66,5 +66,3 @@ z_steps
 
 args_list = map(lambda x: str(x), args_list)
 print " ".join(exec_path+args_list)
-
-#subprocess.call(exec_path+args_list)
