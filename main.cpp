@@ -2,13 +2,11 @@
 
 #define dblarg(x) atof(argv[x])
 
-// Total laser power in Watts
-const double las_pow = 2;
-
-// Since we accept normalized r, the beam width doesn't appear 
+// Since we accept normalized r, the beam width doesn't appear.
+// The total laser power is unity to independize the calculation of force 
 double intens(double r, double th)
 {
-	const double I0 = 2*las_pow/M_PI;
+	const double I0 = 2/M_PI;
     return I0*exp(-2*pow(r, 2));
 }
 
@@ -16,38 +14,40 @@ int main(int argc, char* argv[])
 {
     // Here come the arguments for the simulation
     
-    // The lens radius
-    const double lens_r = dblarg(1);
+    // The lens radius will be unity
+    // The lens focal distance is calculated from NA
+    const double NA = dblarg(1);
     
-    // The lens focal distance
-    const double df = dblarg(2);
+    // The refractive index of the medium
+    const double ne = dblarg(2);
     
-    // Radius, external index and internal index of the sphere
-    const double sph_r = dblarg(3);
-    const double sph_ne = dblarg(4);
-    const double sph_n = dblarg(5);
+    // Now we calculate the focal distance
+    const double df = sqrt(pow(ne, 2) - pow(NA, 2))/NA;
+    
+    // Index of refraction of the sphere (relative)
+    const double sph_n = dblarg(3);
     
     // Quantity of steps to divide the r and theta (integration variables) into.
-    const double r_steps = dblarg(6);
-    const double th_steps = dblarg(7);
+    const double r_steps = dblarg(4);
+    const double th_steps = dblarg(5);
     
     // The limits of integration for x (radial position of particle) IN TERMS OF
     // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double x_init = dblarg(8)*sph_r;
-    const double x_final = dblarg(9)*sph_r;
-    const double x_steps = dblarg(10);
+    const double x_init = dblarg(6);
+    const double x_final = dblarg(7);
+    const double x_steps = dblarg(8);
     
     // The limits of integration for z (axial position of particle) IN TERMS OF
     // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double y_init = dblarg(11)*sph_r;
-    const double y_final = dblarg(12)*sph_r;
-    const double y_steps = dblarg(13);
+    const double y_init = dblarg(9);
+    const double y_final = dblarg(10);
+    const double y_steps = dblarg(11);
     
     // The limits of integration for z (axial position of particle) IN TERMS OF
     // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double z_init = dblarg(14)*sph_r;
-    const double z_final = dblarg(15)*sph_r;
-    const double z_steps = dblarg(16);
+    const double z_init = dblarg(12);
+    const double z_final = dblarg(13);
+    const double z_steps = dblarg(14);
     
     // Calculate the differentials
     const double dr = 1/r_steps;
@@ -62,11 +62,11 @@ int main(int argc, char* argv[])
     
     l.set_df(df);
     l.set_intensity(&intens);
-    l.set_radius(lens_r);
+    l.set_radius(1);
     
-    s.set_r(sph_r);
-    s.set_n(sph_n);
-    s.set_ne(sph_ne);
+    s.set_r(1);
+    s.set_n(sph_n*ne);
+    s.set_ne(ne);
     
     // Begin the simulation
     
@@ -94,6 +94,11 @@ int main(int argc, char* argv[])
 		                force += s.get_force(l.get_ray(r, th))*dr*dth;
 		            }
 		        }
+		        
+		        // Independize the force from the external refractive index
+		        // and the laser power
+		        force = force * c / ne;
+		        
 		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
 		        if (z_init == z_final) break;
 	        }
