@@ -132,3 +132,17 @@ Vector3d& Sphere::get_force(Ray& ray)
     }
     return this->current_force;
 }
+
+Vector3d Sphere::get_total_force(Lens& l, double dr, double dth)
+{
+	Vector3d force = Vector3d(0,0,0);
+	for (double r=0; r<=1; r+= dr)
+	{
+		for (double th = 0; th <= 2*M_PI; th+= dth)
+		{
+		    force += this->get_force(l.get_ray(r, th))*dr*dth;
+		}
+	}
+	
+	return force;
+}

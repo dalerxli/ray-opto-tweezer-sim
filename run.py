@@ -7,7 +7,7 @@ exec_path = ["./app"]
 # Here come the arguments for the simulation
 
 # The lens numerical aperture
-NA = 0.95;
+NA = 0.75;
 
 # Medium refractive index
 ne = 1;
@@ -22,7 +22,7 @@ th_steps = 100;
 # The limits of integration for x (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 x_init = 0;
-x_final = 0;
+x_final = 1.5;
 x_steps = 100;
 
 # The limits of integration for y (radial position of particle) IN TERMS OF
@@ -35,7 +35,7 @@ y_steps = 3;
 # PARTICLE RADIUS. The particle position is relative to the focus.
 z_init = -2;
 z_final = 2;
-z_steps = 300;
+z_steps = 100;
 
 # List of arguments
 args_list = [

@@ -113,4 +113,7 @@ class Sphere
         
         // Force due to one ray
         Vector3d& get_force(Ray& ray);
+
+		// Force due to all the rays with the specified steps
+		Vector3d get_total_force(Lens& l, double dr, double dth);
 };

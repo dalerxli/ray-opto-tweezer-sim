@@ -87,17 +87,10 @@ int main(int argc, char* argv[])
      	   	{
 		        force = Vector3d(0,0,0);
 		        l.set_lens_pos(Vector3d(-x,0,df-z));
-		        for (double r=0; r<=1; r+= dr)
-		        {
-		            for (double th = 0; th <= 2*M_PI; th+= dth)
-		            {
-		                force += s.get_force(l.get_ray(r, th))*dr*dth;
-		            }
-		        }
 		        
-		        // Independize the force from the external refractive index
-		        // and the laser power
-		        force = force * c / ne;
+		        // Get the force and independize itforce from the external 
+		        // refractive index and the laser power
+		        force = s.get_total_force(l, dr, dth) * c / ne;
 		        
 		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
 		        if (z_init == z_final) break;
