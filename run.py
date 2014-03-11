@@ -7,7 +7,7 @@ exec_path = ["./app"]
 # Here come the arguments for the simulation
 
 # The lens numerical aperture
-NA = 0.75;
+NA = 0.65;
 
 # Medium refractive index
 ne = 1;
@@ -21,9 +21,9 @@ th_steps = 100;
 
 # The limits of integration for x (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
-x_init = 0;
-x_final = 1.5;
-x_steps = 100;
+x_init = -3;
+x_final = 3;
+x_steps = 1000;
 
 # The limits of integration for y (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
@@ -33,9 +33,12 @@ y_steps = 3;
 
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
-z_init = -2;
-z_final = 2;
-z_steps = 100;
+z_init = -0;
+z_final = 0;
+z_steps = 1000;
+
+# Double trap?
+double_trap = 1
 
 # List of arguments
 args_list = [
@@ -57,7 +60,9 @@ y_steps,
 
 z_init,
 z_final,
-z_steps
+z_steps,
+
+double_trap
 ]
 
 args_list = map(lambda x: str(x), args_list)

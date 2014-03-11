@@ -49,6 +49,10 @@ int main(int argc, char* argv[])
     const double z_final = dblarg(13);
     const double z_steps = dblarg(14);
     
+    // Calculate forces for a double trap? 1 for true, 0 for false
+    unsigned int double_trap = (int) dblarg(15);
+    if (double_trap != 0) double_trap = 1;
+    
     // Calculate the differentials
     const double dr = 1/r_steps;
     const double dth = 2*M_PI/th_steps;
@@ -86,11 +90,21 @@ int main(int argc, char* argv[])
         	for (double z=z_init; z <= z_final+tolz; z += dz)
      	   	{
 		        force = Vector3d(0,0,0);
-		        l.set_lens_pos(Vector3d(-x,0,df-z));
 		        
-		        // Get the force and independize itforce from the external 
-		        // refractive index and the laser power
-		        force = s.get_total_force(l, dr, dth) * c / ne;
+		        for(int i=0; i <= double_trap; i++)
+		        {
+		        	Vector3d temp = Vector3d(0,0,0);
+		        	
+				    l.set_lens_pos(Vector3d(-x,0,df - z * pow(-1, i)));
+				    
+				    // Get the force and independize it from the external 
+				    // refractive index and the laser power
+				    temp = s.get_total_force(l, dr, dth) * c / ne;
+				    temp = temp * pow(0.5, double_trap);
+				    temp = temp.cwiseProduct(Vector3d(1,1,pow(-1, i)));
+				    
+				    force += temp;
+		        }
 		        
 		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
 		        if (z_init == z_final) break;
