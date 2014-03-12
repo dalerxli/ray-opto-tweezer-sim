@@ -83,6 +83,12 @@ int main(int argc, char* argv[])
     double toly = (y_final - y_init)/1e4;
     double tolz = (z_final - z_init)/1e4;
     
+    // Separator after iterating over z
+    const char sepz = ((z_init == z_final) ? '\0' : '\n');
+    
+    // Separator after iterating over y
+    const char sepy = ((y_init == y_final) ? '\0' : '\n');
+    
     for (double x=x_init; x <= x_final+tolx; x += dx)
     {
         for (double y=y_init; y <= y_final+toly; y += dy)
@@ -109,11 +115,13 @@ int main(int argc, char* argv[])
 		        printf("%e %e %e %e %e %e\n", x, y, z, force[0], force[1], force[2]);
 		        if (z_init == z_final) break;
 	        }
-	        printf("\n");
+	        
 	        if (y_init == y_final) break;
+	        printf("%c", sepz);
         }
-        printf("\n");
+        
         if (x_init == x_final) break;
+        printf("%c", sepy);
     }
     
     return 0;
