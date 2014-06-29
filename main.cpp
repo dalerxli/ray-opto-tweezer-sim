@@ -84,10 +84,10 @@ int main(int argc, char* argv[])
     double tolz = (z_final - z_init)/1e4;
     
     // Separator after iterating over z
-    const char sepz = ((z_init == z_final) ? '\0' : '\n');
+    const char sepz = ((z_init == z_final) ? ' ' : '\n');
     
     // Separator after iterating over y
-    const char sepy = ((y_init == y_final) ? '\0' : '\n');
+    const char sepy = ((y_init == y_final) ? ' ' : '\n');
     
     for (double x=x_init; x <= x_final+tolx; x += dx)
     {
@@ -97,6 +97,7 @@ int main(int argc, char* argv[])
      	   	{
 		        force = Vector3d(0,0,0);
 		        
+		        // Calculate the forces for a single or a double trap
 		        for(int i=0; i <= double_trap; i++)
 		        {
 		        	Vector3d temp = Vector3d(0,0,0);

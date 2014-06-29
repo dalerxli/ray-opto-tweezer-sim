@@ -22,8 +22,8 @@ th_steps = 100;
 # The limits of integration for x (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 x_init = 0;
-x_final = 0;
-x_steps = 100;
+x_final = 3;
+x_steps = 1000;
 
 # The limits of integration for y (radial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
@@ -34,8 +34,8 @@ y_steps = 3;
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
 z_init = 0;
-z_final = 1;
-z_steps = 100;
+z_final = 0;
+z_steps = 1000;
 
 # Double trap?
 double_trap = 1
