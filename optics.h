@@ -69,7 +69,9 @@ class Lens
     public:
         void set_lens_pos(Vector3d pos);
         void set_df(double df);
+        double get_df(){return this->df;}
         void set_radius(double r){this->radius = r;}
+        double get_radius(){return this->radius;}
         void set_intensity(double (*in_f)(double, double))
         {
             this->intensity_f = in_f;

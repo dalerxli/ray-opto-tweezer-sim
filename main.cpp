@@ -14,44 +14,51 @@ int main(int argc, char* argv[])
 {
     // Here come the arguments for the simulation
     
-    // The lens radius will be unity
-    // The lens focal distance is calculated from NA
-    const double NA = dblarg(1);
+    // The focal distance of the lens
+    const double df = dblarg(1);
+    
+    // The radius of the lens (i.e. the radius of the incoming beam)
+    const double l_r = dblarg(2);
     
     // The refractive index of the medium
-    const double ne = dblarg(2);
-    
-    // Now we calculate the focal distance
-    const double df = sqrt(pow(ne, 2) - pow(NA, 2))/NA;
+    const double ne = dblarg(3);
     
     // Index of refraction of the sphere (relative)
-    const double sph_n = dblarg(3);
+    const double sph_n = dblarg(4);
     
     // Quantity of steps to divide the r and theta (integration variables) into.
-    const double r_steps = dblarg(4);
-    const double th_steps = dblarg(5);
+    const double r_steps = dblarg(5);
+    const double th_steps = dblarg(6);
     
-    // The limits of integration for x (radial position of particle) IN TERMS OF
-    // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double x_init = dblarg(6);
-    const double x_final = dblarg(7);
-    const double x_steps = dblarg(8);
+    // The limits of integration for x (radial position of particle)
+    // The particle position is relative to the focus.
+    const double x_init = dblarg(7);
+    const double x_final = dblarg(8);
+    const double x_steps = dblarg(9);
     
-    // The limits of integration for z (axial position of particle) IN TERMS OF
-    // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double y_init = dblarg(9);
-    const double y_final = dblarg(10);
-    const double y_steps = dblarg(11);
+    // The limits of integration for z (axial position of particle)
+    // The particle position is relative to the focus.
+    const double y_init = dblarg(10);
+    const double y_final = dblarg(11);
+    const double y_steps = dblarg(12);
     
-    // The limits of integration for z (axial position of particle) IN TERMS OF
-    // PARTICLE RADIUS. The particle position is relative to the focus.
-    const double z_init = dblarg(12);
-    const double z_final = dblarg(13);
-    const double z_steps = dblarg(14);
+    // The limits of integration for z (axial position of particle)
+    // The particle position is relative to the focus.
+    const double z_init = dblarg(13);
+    const double z_final = dblarg(14);
+    const double z_steps = dblarg(15);
     
     // Calculate forces for a double trap? 1 for true, 0 for false
-    unsigned int double_trap = (int) dblarg(15);
+    unsigned int double_trap = (int) dblarg(16);
     if (double_trap != 0) double_trap = 1;
+    
+    // Additional parameters for the Gaussian beam
+    
+    // The sphere radius
+    const double s_r = dblarg(17);
+    
+    // The wavelength of the light
+    const double lam = dblarg(18);
     
     // Calculate the differentials
     const double dr = 1/r_steps;
@@ -64,11 +71,11 @@ int main(int argc, char* argv[])
     Sphere s = Sphere();
     Lens l = Lens();
     
-    l.set_df(df);
+    //l.set_df(df);
     l.set_intensity(&intens);
-    l.set_radius(1);
+    l.set_radius(l_r);
     
-    s.set_r(1);
+    s.set_r(s_r);
     s.set_n(sph_n*ne);
     s.set_ne(ne);
     
@@ -95,6 +102,34 @@ int main(int argc, char* argv[])
         {
         	for (double z=z_init; z <= z_final+tolz; z += dz)
      	   	{
+     	   	    // Calculate the parameters for the Gaussian beam
+     	   	    double th = atan(l_r/df);
+     	   	    double w0 = lam/(M_PI*th);
+     	   	    double zr = w0/th;
+     	   	    
+     	   	    // The radius of curvature (with the fix for the infinite
+     	   	    // radius of curvature at beam waist)
+     	   	    double R = 1e7;
+     	   	    if (z != 0.0)
+     	   	        R = fabs(z*(1 + pow(zr/z, 2)));
+     	   	    
+     	   	    // The beam width
+     	   	    double w = w0*sqrt(1 + pow(z/zr, 2));
+     	   	    
+     	   	    // Finally, we set the optical parameters corrected to
+     	   	    // simulate the Gaussian beam
+     	   	    
+     	   	    // The effective focal length
+     	   	    double df_ef = R*l_r/w;
+     	   	    l.set_df(df_ef);
+     	   	    
+     	   	    // The effective distance to the focal point (to have the
+     	   	    // correct beam width in the simulation). The weird expression
+     	   	    // is needed to copy the sign of z.
+     	   	    double z_ef = ((z > 0) - (z < 0)) *  R;
+     	   	    
+     	   	    //printf("\n%e, %e\n", z_ef, df_ef);
+     	   	    
 		        force = Vector3d(0,0,0);
 		        
 		        // Calculate the forces for a single or a double trap
@@ -102,7 +137,8 @@ int main(int argc, char* argv[])
 		        {
 		        	Vector3d temp = Vector3d(0,0,0);
 		        	
-				    l.set_lens_pos(Vector3d(-x,0,df - z * pow(-1, i)));
+		        	// Note that we are using the corrected values - R and z_ef
+				    l.set_lens_pos(Vector3d(-x,0, df_ef - z_ef * pow(-1, i)));
 				    
 				    // Get the force and independize it from the external 
 				    // refractive index and the laser power

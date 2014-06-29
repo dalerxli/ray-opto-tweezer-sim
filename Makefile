@@ -1,4 +1,4 @@
 all:
-	g++ -I /usr/include/eigen3/ -g main.cpp optics.cpp -O2 -march=atom -mtune=atom -o app
+	g++ -I /usr/include/eigen3/ -g main.cpp optics.cpp -march=native -O2 -o app
 test:
-	g++ -I /usr/include/eigen3/ -g test_ray_q.cpp optics.cpp -O2 -march=atom -mtune=atom -o test_q
+	g++ -I /usr/include/eigen3/ -g test_ray_q.cpp optics.cpp -march=native -O2 -o test_q
