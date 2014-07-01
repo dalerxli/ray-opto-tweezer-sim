@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
      	   	    // The radius of curvature (with the fix for the infinite
      	   	    // radius of curvature at beam waist)
      	   	    double R = 1e7;
-     	   	    if (z != 0.0)
+     	   	    if (fabs(z) >= 1e-12)
      	   	        R = fabs(z*(1 + pow(zr/z, 2)));
      	   	    
      	   	    // The beam width
@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
      	   	    // is needed to copy the sign of z.
      	   	    double z_ef = ((z > 0) - (z < 0)) *  R;
      	   	    
-     	   	    //printf("\n%e, %e\n", z_ef, df_ef);
+     	   	    //printf("\n%e, %e\n", z_ef, R);
      	   	    
 		        force = Vector3d(0,0,0);
 		        

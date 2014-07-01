@@ -10,13 +10,13 @@ exec_path = ["./app"]
 df = 30e-3;
 
 # Incoming beam width
-l_r = 5e-3;
+l_r = 3e-3;
 
 # Medium refractive index
 ne = 1;
 
 # Relative index of the sphere
-sph_n = 1.5;
+sph_n = 1.33;
 
 # Quantity of steps to divide the r and theta (integration variables) into.
 r_steps = 300;
@@ -36,15 +36,15 @@ y_steps = 3;
 
 # The limits of integration for z (axial position of particle) IN TERMS OF
 # PARTICLE RADIUS. The particle position is relative to the focus.
-z_init = -40e-6;
-z_final = 40e-6;
-z_steps = 100;
+z_init = -1000e-6;
+z_final = 1000e-6;
+z_steps = 1003;
 
 # Double trap?
 double_trap = 0
 
 # Sphere radius
-s_r = 5e-7
+s_r = 7e-6
 
 # Light wavelength
 lam = 532e-9 
