@@ -6,8 +6,8 @@
 // The total laser power is unity to independize the calculation of force 
 double intens(double r, double th)
 {
-	const double I0 = 2/M_PI;
-    return I0*exp(-2*pow(r, 2));
+	const double I0 = 8/M_PI;
+    return I0*exp(-2*pow(2*r, 2));
 }
 
 int main(int argc, char* argv[])
@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     const double df = dblarg(1);
     
     // The radius of the lens (i.e. the radius of the incoming beam)
-    const double l_r = dblarg(2);
+    const double l_r = 2*dblarg(2);
     
     // The refractive index of the medium
     const double ne = dblarg(3);
