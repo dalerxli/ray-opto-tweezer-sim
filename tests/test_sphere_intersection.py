@@ -185,24 +185,40 @@ class RefractionTestCase(unittest.TestCase):
         
 # Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 # The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
-#class SphereIntersectionForceTestCase(unittest.TestCase):
-    #def test_force_normal(self):
-        ## The ray incides normally on the sphere
-        #c = np.array([5,0,0])
-        #R = 1
-        #o = np.array([0,0,0])
-        #l = np.array([1,0,0])
+class SphereIntersectionForceTestCase(unittest.TestCase):
+    def test_force_normal(self):
+        # The ray incides normally on the sphere
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,0])
+        l = np.array([1,0,0])
         
-        ## This is the absolute refractive index of the sphere
-        #n = 1.5
+        # This is the relative refractive index of the sphere
+        nr = 1.5
         
-        #force = ix.ray_force(c, R, o, l, n)
+        force = ix.ray_force(c, R, o, l, nr)
         
-        ## The force should be in the direction of the ray in this case
-        #self.assertGreater(force[0], 0)
+        # The force should be in the direction of the ray in this case
+        self.assertGreater(force[0], 0)
         
-        ## And it should not have any orthogonal components
-        #self.assertGreater(force[1], 0)
-        #self.assertGreater(force[2], 0)
+        # And it should not have any orthogonal components
+        self.assertGreater(force[1], 0)
+        self.assertGreater(force[2], 0)
+        
+    def test_force_no_particle(self):
+        # If the particle has relative index = 1, then there is no particle and no force
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,0])
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1
+        
+        force = ix.ray_force(c, R, o, l, nr)
+        
+        # There should be no force
+        self.assertAlmostEqual(np.norm(force), 0)
+        
 if __name__ == '__main__':
     unittest.main()
