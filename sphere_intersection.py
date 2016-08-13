@@ -10,7 +10,7 @@ lgg = logging.getLogger("intersection_module")
 def snell(theta, nr):
     # Raise exception if the angle is out of the [0,pi/2] range
     if not 0 <= theta <= np.pi/2:
-        raise ValueError("Incidence angle out of range")
+        raise ValueError("Incidence angle out of range: {0}".format(theta))
     
     return np.arcsin(1/nr*np.sin(theta))
 
@@ -19,15 +19,15 @@ def snell(theta, nr):
 def fresnel(th, r, Pp, nr):
     # Raise exception if the incidence angle is significantly greater than pi/2 or is negative
     if not 0 <= th <= np.pi/2:
-        raise ValueError("Incidence angle is out of range")
+        raise ValueError("Incidence angle is out of range: {0}".format(th))
     
     # The same for the transmission angle
     if not 0 <= r <= np.pi/2:
-        raise ValueError("Transmission angle is out of range")
+        raise ValueError("Transmission angle is out of range: {0}".format(r))
     
     # And Pp should be within the [0,1] interval
     if not 0 <= Pp <= 1:
-        raise ValueError("p-polarization proportion out of range")
+        raise ValueError("p-polarization proportion out of range: {0}".format(Pp))
     
     # Calculate the reflectivities:
     Rs = ((np.cos(th) - nr*np.cos(r))/(np.cos(th) + nr*np.cos(r)))**2
@@ -43,7 +43,7 @@ def fresnel(th, r, Pp, nr):
 def intersection_angle(c, R, o, l):
     # Make sure that the sphere radius is not zero or negative
     if R <= 0:
-        raise ValueError("The sphere radius is negative or zero")
+        raise ValueError("The sphere radius is not valid: {0}".format(R))
     # Make l (director of the line) unitary
     ln = l/npl.norm(l)
     
@@ -86,4 +86,46 @@ def intersection_angle(c, R, o, l):
         c_angle = 1
     return np.arccos(np.abs(c_angle))
     
+def ray_force(c, R, o, l, nr):
+    # Calculate the incidence angle first. If its = nan, then there is no intersection and the force is zero:
+    th = intersection_angle(c, R, o, l)
+    if np.isnan(th):
+        return np.array([0,0,0])
     
+    ## First we have to determine the coordinate system for the gradient and scattering forces:
+    # The scattering force direction, according to Ashkin, 1992, is along the ray propagation direction:
+    dir_scat = l/npl.norm(l)
+    
+    # The gradient force direction (Ashkin, 1992) is orthogonal to the ray propagation direction and lies in the plane formed by the ray and the center of the sphere. For that, we first make a vector that points from the center of the sphere to one of the points in the line and Gram-Schmidt orthogonalize it to make a vector perpendicular to the scattering
+    a = o-c
+    
+    dir_grad = a - np.dot(a, dir_scat)*dir_scat
+    
+    # If the rays passes through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence:
+    if np.all(dir_grad == np.array([0,0,0])):
+       dir_grad = np.array([0,0,0])
+    
+    # Otherwise, we just normalize it
+    else:
+        dir_grad = dir_grad / npl.norm(dir_grad)
+        
+    # The magnitudes of the forces are specified in Ashkin, 1992. First let's calculate some auxiliary quantities:
+    
+    # Refraction angle:
+    r = snell(th, nr)
+    
+    # Transmission and reflection coefficients
+    # TODO: add polarization support
+    T, R = fresnel(th, r, 0.5, nr)
+    
+    # And finally, the scattering force magnitude:
+    Fs = 1 + R*np.cos(2*th) - (T**2 * (np.cos(2*th-2*r) + R*np.cos(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+    
+    # And the gradient force magnitude:
+    Fg = R*np.sin(2*th) - (T**2 * (np.sin(2*th-2*r) + R*np.sin(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+    
+    # And calculate the total force:
+    # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
+    F = Fs*dir_scat - Fg*dir_grad
+    
+    return F

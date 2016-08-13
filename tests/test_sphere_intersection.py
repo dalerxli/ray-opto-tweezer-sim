@@ -6,6 +6,7 @@ import sphere_intersection as ix
 
 # Auxiliary
 import numpy as np
+import numpy.linalg as npl
 
 # The function should find the intersection between a sphere (centered at c, the first argument) of radius R (second argument) with a line of origin o (third argument) and direction vector l (fourth argument)
 class SphereIntersectionAngleTestCase(unittest.TestCase):
@@ -202,8 +203,8 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         self.assertGreater(force[0], 0)
         
         # And it should not have any orthogonal components
-        self.assertGreater(force[1], 0)
-        self.assertGreater(force[2], 0)
+        self.assertAlmostEqual(force[1], 0)
+        self.assertAlmostEqual(force[2], 0)
         
     def test_force_no_particle(self):
         # If the particle has relative index = 1, then there is no particle and no force
@@ -218,7 +219,50 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         force = ix.ray_force(c, R, o, l, nr)
         
         # There should be no force
-        self.assertAlmostEqual(np.norm(force), 0)
+        self.assertAlmostEqual(npl.norm(force), 0)
+        
+    def test_force_sign(self):
+        # The ray is a bit displaced to the top
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,0.1])
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        force = ix.ray_force(c, R, o, l, nr)
+        
+        # Since the ray will be refracted towards -z, the force should be towards +z
+        self.assertGreater(force[2], 0)
+        
+    def test_force_symmetry(self):
+        # Test whether the gradient force is antisymmetric with respect to +z-> -z
+        c = np.array([5,0,0])
+        R = 1
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        for z in np.linspace(0, 1, 20):
+            o = np.array([0,0,z])
+            self.assertAlmostEqual(ix.ray_force(c, R, o, l, nr)[2], \
+                -ix.ray_force(c, R, -o, l, nr)[2])
+            
+    def test_no_intersection(self):
+        # Test whether the force is zero when the ray doesn't hit the particle
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,1.1])
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        force = ix.ray_force(c, R, o, l, nr)
+        
+        self.assertAlmostEqual(npl.norm(force), 0)
         
 if __name__ == '__main__':
     unittest.main()
