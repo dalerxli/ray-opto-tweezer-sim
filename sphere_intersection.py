@@ -18,6 +18,11 @@ def intersection_angle(c, R, o, l):
     # The point at which the intersection occurs is x:
     x = o + d*l
     
+    # If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
+    if np.all(x == np.array([0,0,0])):
+        d = -np.dot(l, (o-c)) - np.sqrt(D)
+        x = o + d*l
+    
     # The vector that points from the center of the sphere to the intersection is r:
     r = x-c
     
