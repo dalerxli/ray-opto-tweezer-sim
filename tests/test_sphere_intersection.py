@@ -106,6 +106,13 @@ class RefractionTestCase(unittest.TestCase):
         
         self.assertAlmostEqual(np.sin(r), 1/nr)
         
+    def test_snell_homogeneous(self):
+        # If the relative index is 1, then there should be no change of propagation at all
+        nr = 1
+        
+        for th in [0, np.pi/3, np.pi/4, np.pi/5]:
+            self.assertAlmostEqual(ix.snell(th, nr), th)
+        
 # Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 # The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
 #class SphereIntersectionForceTestCase(unittest.TestCase):

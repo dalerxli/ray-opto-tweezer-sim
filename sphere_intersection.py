@@ -6,6 +6,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 lgg = logging.getLogger("intersection_module")
 
+# Calculates the refraction angle given the incidence angle and the relative index of refraction
+def snell(theta, nr):
+    return np.arcsin(1/nr*np.sin(theta))
+
 def intersection_angle(c, R, o, l):
     # Make l (director of the line) unitary
     ln = l/npl.norm(l)
