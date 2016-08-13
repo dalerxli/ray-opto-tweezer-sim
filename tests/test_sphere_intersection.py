@@ -250,7 +250,7 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
             self.assertAlmostEqual(ix.ray_force(c, R, o, l, nr)[2], \
                 -ix.ray_force(c, R, -o, l, nr)[2])
             
-    def test_no_intersection(self):
+    def test_force_no_intersection(self):
         # Test whether the force is zero when the ray doesn't hit the particle
         c = np.array([5,0,0])
         R = 1
@@ -263,6 +263,37 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         force = ix.ray_force(c, R, o, l, nr)
         
         self.assertAlmostEqual(npl.norm(force), 0)
+        
+    def test_force_ashkin(self):
+        # Test the maximum gradient forces published in Ashkin, 1992
+        
+        # The origin of the ray will be on the sphere for simpler calculations:
+        c = np.array([1,0,0])
+        R = 1
+        o = np.array([0,0,0])
+        
+        data = np.array([
+            [1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
+            [1.2, np.sqrt(0.506**2 + 0.341**2), 72*np.pi/180],
+            [1.4, np.sqrt(0.566**2 + 0.448**2), 64*np.pi/180],
+            [1.6, np.sqrt(0.570**2 + 0.535**2), 60*np.pi/180],
+            [1.8, np.sqrt(0.547**2 + 0.625**2), 59*np.pi/180],
+            [2.0, np.sqrt(0.510**2 + 0.698**2), 59*np.pi/180],
+            [2.5, np.sqrt(0.405**2 + 0.837**2), 64*np.pi/180]
+            ])
+        
+        def check(row):
+            th = row[2]
+            Q = row[1]
+            nr = row[0]
+            
+            l = np.array([np.cos(th), 0, np.sin(th)])
+            force = ix.ray_force(c, R, o, l, nr)
+            
+            return np.abs(npl.norm(force) - Q)
+            
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        self.assertLess(np.max(res), 0.021)
         
 if __name__ == '__main__':
     unittest.main()
