@@ -112,6 +112,19 @@ class RefractionTestCase(unittest.TestCase):
         
         for th in [0, np.pi/3, np.pi/4, np.pi/5]:
             self.assertAlmostEqual(ix.snell(th, nr), th)
+            
+    def test_fresnel_normal(self):
+        # Test Fresnel at normal incidence. It should not depend on the angle of polarization (p), and the energy must be conserved between the transmittance and reflectance
+        # Note that Fresnel only really depends on the relative index
+        nr = 1.5
+        th = 0
+        r = 0
+        
+        for p in [0, np.pi/2, np.pi/3, np.pi/4, np.pi/5]:
+            T, R = ix.fresnel(th, r, nr, p)
+            
+            self.assertAlmostEqual(T+R, 1)
+            self.assertAlmostEqual(R, ((1 - nr)/(1 + nr))**2)
         
 # Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 # The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
