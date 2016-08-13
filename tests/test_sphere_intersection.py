@@ -113,6 +113,14 @@ class RefractionTestCase(unittest.TestCase):
         for th in [0, np.pi/3, np.pi/4, np.pi/5]:
             self.assertAlmostEqual(ix.snell(th, nr), th)
             
+    def test_snell_invalid_angles(self):
+        # Snell shouldn't accept any negative angles or angles greater than pi/2
+        nr = 1.5
+        
+        with self.assertRaises(ValueError):
+            ix.snell(np.pi/1.5, nr)
+            ix.snell(-np.pi/3, nr)
+            
     def test_fresnel_normal(self):
         # Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance
         # Note that Fresnel only really depends on the relative index.

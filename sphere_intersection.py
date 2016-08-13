@@ -8,6 +8,13 @@ lgg = logging.getLogger("intersection_module")
 
 # Calculates the refraction angle given the incidence angle and the relative index of refraction
 def snell(theta, nr):
+    # Raise exception if the angle is significantly greater than pi/2
+    if theta - np.pi/2 > 1e-7:
+        raise ValueError("Incidence angle greater that pi/2")
+    # Or if it's negative
+    elif theta < 0:
+        raise ValueError("Incidence angle is negative")
+    
     return np.arcsin(1/nr*np.sin(theta))
 
 # Calculates the transmission and reflection for a ray with a given incidence angle (th), refraction angle (r), and polarization angle (p) when the relative index of refraction is specified (nr)
