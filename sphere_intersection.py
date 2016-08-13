@@ -49,3 +49,4 @@ def intersection_angle(c, R, o, l):
         c_angle = 1
     return np.arccos(np.abs(c_angle))
     
+    
