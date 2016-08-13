@@ -58,7 +58,7 @@ class SphereIntersectionTestCase(unittest.TestCase):
         R = 1
         
         angle = ix.intersection_angle(c, R, o, l)
-        self.assertAlmostEqual(angle, 0)
+        self.assertAlmostEqual(angle, 0, places=5)
         
     def test_intersect_normal_at_zero(self):
         # What happens if the position of the intersection is (0,0,0)?
