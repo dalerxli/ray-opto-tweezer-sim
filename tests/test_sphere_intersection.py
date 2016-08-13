@@ -264,6 +264,34 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         
         self.assertAlmostEqual(npl.norm(force), 0)
         
+    def test_force_tangent(self):
+        # Test whether the force of a grazing ray is zero
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,1])
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        force = ix.ray_force(c, R, o, l, nr)
+        
+        self.assertAlmostEqual(npl.norm(force), 0)
+        
+    def test_force_almost_tangent(self):
+        # Test whether the force of a almost grazing ray is nearly zero
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([0,0,R*np.sin(89.5/180*np.pi)])
+        l = np.array([1,0,0])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.2
+        
+        force = ix.ray_force(c, R, o, l, nr)
+        
+        self.assertLess(npl.norm(force), 0.1)
+        
     def test_force_ashkin(self):
         # Test the maximum gradient forces published in Ashkin, 1992
         
