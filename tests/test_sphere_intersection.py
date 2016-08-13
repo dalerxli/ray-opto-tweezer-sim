@@ -79,5 +79,14 @@ class SphereIntersectionTestCase(unittest.TestCase):
         angle = ix.intersection_angle(c, R, o, l)
         self.assertAlmostEqual(angle, np.pi/2)
         
+    def test_intersect_45(self):
+        c = np.array([4,0,0])
+        R = 1
+        o = np.array([0,0,-3])
+        l = np.array([1,0,1])
+        
+        angle = ix.intersection_angle(c, R, o, l)
+        self.assertAlmostEqual(angle, np.pi/4)
+        
 if __name__ == '__main__':
     unittest.main()
