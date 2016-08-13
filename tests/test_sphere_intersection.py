@@ -89,6 +89,16 @@ class SphereIntersectionAngleTestCase(unittest.TestCase):
         
         angle = ix.intersection_angle(c, R, o, l)
         self.assertAlmostEqual(angle, np.pi/4)
+        
+    def test_intersect_invalid_radius(self):
+        # The function should not accept zero or negative sphere radiuses
+        c = np.array([4,0,0])
+        o = np.array([0,0,-3])
+        l = np.array([1,0,1])
+        
+        for R in [-1, 0]:
+            with self.assertRaises(ValueError):
+                ix.intersection_angle(c, R, o, l)
 
 # Testing the helper functions to calculate the angle of refraction and the coefficients of transmission/reflection
 class RefractionTestCase(unittest.TestCase):
@@ -117,9 +127,9 @@ class RefractionTestCase(unittest.TestCase):
         # Snell shouldn't accept any negative angles or angles greater than pi/2
         nr = 1.5
         
-        with self.assertRaises(ValueError):
-            ix.snell(np.pi/1.5, nr)
-            ix.snell(-np.pi/3, nr)
+        for th in [np.pi/1.5, -np.pi/3]:
+            with self.assertRaises(ValueError):
+                ix.snell(th, nr)
             
     def test_fresnel_normal(self):
         # Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance
@@ -156,6 +166,22 @@ class RefractionTestCase(unittest.TestCase):
         
         T, R = ix.fresnel(th, r, 1, nr)
         self.assertAlmostEqual(R, 0)
+        
+    def test_fresnel_invalid_arguments(self):
+        nr = 1.5
+        th = np.pi/4
+        r = ix.snell(th, nr)
+        
+        # Fresnel shouldn't accept Pp out of [0,1] interval
+        for Pp in [-0.1, 1.2]:
+            with self.assertRaises(ValueError):
+                ix.fresnel(th, r, Pp, nr)
+            
+        # Or angles that are too big or negative
+        for th in [-0.1, np.pi/1.5]:
+            for r in [-0.1, np.pi/1.5]:
+                with self.assertRaises(ValueError):
+                    ix.fresnel(th, r, 0.5, nr)
         
 # Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 # The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
