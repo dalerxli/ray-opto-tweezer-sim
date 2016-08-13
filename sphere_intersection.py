@@ -10,6 +10,20 @@ lgg = logging.getLogger("intersection_module")
 def snell(theta, nr):
     return np.arcsin(1/nr*np.sin(theta))
 
+# Calculates the transmission and reflection for a ray with a given incidence angle (th), refraction angle (r), and polarization angle (p) when the relative index of refraction is specified (nr)
+# Also note that the polarization is specified as the normalized power of p-polarization (Pp). Then, the power of the s-polarization is simply (1-Pp).
+def fresnel(th, r, Pp, nr):
+    # Calculate the reflectivities:
+    Rs = ((np.cos(th) - nr*np.cos(r))/(np.cos(th) + nr*np.cos(r)))**2
+    Rp = ((np.cos(r) - nr*np.cos(th))/(np.cos(r) + nr*np.cos(th)))**2
+    
+    # Calculate the final reflectivity and transmittivity
+    R = Rs*(1-Pp) + Rp*Pp
+    T = 1 - R
+    
+    # And return the value
+    return (T, R)
+
 def intersection_angle(c, R, o, l):
     # Make l (director of the line) unitary
     ln = l/npl.norm(l)

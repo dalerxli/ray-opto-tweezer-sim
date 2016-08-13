@@ -114,17 +114,40 @@ class RefractionTestCase(unittest.TestCase):
             self.assertAlmostEqual(ix.snell(th, nr), th)
             
     def test_fresnel_normal(self):
-        # Test Fresnel at normal incidence. It should not depend on the angle of polarization (p), and the energy must be conserved between the transmittance and reflectance
-        # Note that Fresnel only really depends on the relative index
+        # Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance
+        # Note that Fresnel only really depends on the relative index.
+        # Also note that the polarization is specified as the normalized power of p-polarization (Pp). Then, the power of the s-polarization is simply (1-Pp).
         nr = 1.5
         th = 0
         r = 0
         
-        for p in [0, np.pi/2, np.pi/3, np.pi/4, np.pi/5]:
-            T, R = ix.fresnel(th, r, nr, p)
+        for Pp in [0, 0.1, 0.5, 0.8, 1]:
+            T, R = ix.fresnel(th, r, Pp, nr)
             
             self.assertAlmostEqual(T+R, 1)
             self.assertAlmostEqual(R, ((1 - nr)/(1 + nr))**2)
+            
+    def test_fresnel_tangent(self):
+        # The reflectivity should be 1 at tangent incidence, regardless of polarization
+        nr = 1.5
+        th = np.pi/2
+        r = ix.snell(th, nr)
+        
+        for Pp in [0, 0.1, 0.5, 0.8, 1]:
+            T, R = ix.fresnel(th, r, Pp, nr)
+            
+            self.assertAlmostEqual(T+R, 1)
+            self.assertAlmostEqual(R, 1)
+            
+    def test_fresnel_brewster(self):
+        # The reflectivity of a p-polarized ray should be nearly 0 at Brewster's angle
+        nr = 1.5
+        th = np.arctan(nr)
+        
+        r = ix.snell(th, nr)
+        
+        T, R = ix.fresnel(th, r, 1, nr)
+        self.assertAlmostEqual(R, 0)
         
 # Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 # The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
