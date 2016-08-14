@@ -197,7 +197,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.5
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         # The force should be in the direction of the ray in this case
         self.assertGreater(force[0], 0)
@@ -216,7 +219,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         # There should be no force
         self.assertAlmostEqual(npl.norm(force), 0)
@@ -231,7 +237,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.5
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         # Since the ray will be refracted towards -z, the force should be towards +z
         self.assertGreater(force[2], 0)
@@ -245,10 +254,13 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.5
         
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
         for z in np.linspace(0, 1, 20):
             o = np.array([0,0,z])
-            self.assertAlmostEqual(ix.ray_force(c, R, o, l, nr)[2], \
-                -ix.ray_force(c, R, -o, l, nr)[2])
+            self.assertAlmostEqual(ix.ray_force(c, R, o, l, p, nr)[2], \
+                -ix.ray_force(c, R, -o, l, p, nr)[2])
             
     def test_force_no_intersection(self):
         # Test whether the force is zero when the ray doesn't hit the particle
@@ -260,7 +272,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.5
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         self.assertAlmostEqual(npl.norm(force), 0)
         
@@ -274,7 +289,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.5
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         self.assertAlmostEqual(npl.norm(force), 0)
         
@@ -288,7 +306,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # This is the relative refractive index of the sphere
         nr = 1.2
         
-        force = ix.ray_force(c, R, o, l, nr)
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,0,0])
+        
+        force = ix.ray_force(c, R, o, l, p, nr)
         
         self.assertLess(npl.norm(force), 0.1)
         
@@ -299,6 +320,10 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         c = np.array([1,0,0])
         R = 1
         o = np.array([0,0,0])
+        
+        
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([1,1j,0])
         
         data = np.array([
             [1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
@@ -316,7 +341,7 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
             nr = row[0]
             
             l = np.array([np.cos(th), 0, np.sin(th)])
-            force = ix.ray_force(c, R, o, l, nr)
+            force = ix.ray_force(c, R, o, l, p, nr)
             
             return np.abs(npl.norm(force) - Q)
             

@@ -86,7 +86,9 @@ def intersection_angle(c, R, o, l):
         c_angle = 1
     return np.arccos(np.abs(c_angle))
     
-def ray_force(c, R, o, l, nr):
+# This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
+# Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
+def ray_force(c, R, o, l, p, nr):
     # Calculate the incidence angle first. If its = nan, then there is no intersection and the force is zero:
     th = intersection_angle(c, R, o, l)
     if np.isnan(th):
@@ -115,8 +117,12 @@ def ray_force(c, R, o, l, nr):
     r = snell(th, nr)
     
     # Transmission and reflection coefficients
-    # TODO: add polarization support
-    T, R = fresnel(th, r, 0.5, nr)
+    # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
+    Pp = (np.abs(np.dot(p, dir_grad))**2 + np.abs(np.dot(p, dir_scat))**2)/(npl.norm(p)**2)
+    
+    # Note: if dir_grad is null (when the ray is normal on the sphere), Pp will take some value between 0 and 1, but it won't matter since at normal incidence, Fresnel doesn't depend on the polarization
+    
+    T, R = fresnel(th, r, Pp, nr)
     
     # And finally, the scattering force magnitude:
     Fs = 1 + R*np.cos(2*th) - (T**2 * (np.cos(2*th-2*r) + R*np.cos(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
