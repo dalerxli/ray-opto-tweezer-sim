@@ -322,7 +322,7 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         o = np.array([0,0,0])
         
         
-        # And this is the polarization of the ray in Jones notation
+        # And this is the polarization of the ray in Jones notation (circular)
         p = np.array([1,1j,0])
         
         data = np.array([
@@ -348,5 +348,103 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         res = np.apply_along_axis(check, axis=1, arr=data)
         self.assertLess(np.max(res), 0.021)
         
+    def test_force_brewster(self):
+        # Check some relations between s- and p-polarized rays at Brewster incidence
+        c = np.array([5,0,0])
+        R = 1
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        o = np.array([0,0,R*np.sin(np.arctan(nr))])
+        l = np.array([1,0,0])
+        
+        # And this is the polarization of the ray in Jones notation
+        # p-polarization
+        pp = np.array([0,0,1])
+        
+        # s-polarization
+        ps = np.array([0,1,0])
+        
+        force_p = ix.ray_force(c, R, o, l, pp, nr)
+        force_s = ix.ray_force(c, R, o, l, ps, nr)
+        
+        # The gradient force should be smaller for the p-polarized ray since there is nearly no reflection
+        self.assertLess(force_p[0], force_s[0])
+        
+    def test_force_normal_polarization(self):
+        # The force of a normally incident ray should not depend on its polarization
+        
+        c = np.array([5,0,0])
+        R = 1
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        o = np.array([0,0,0])
+        l = np.array([1,0,0])
+        
+        # p-polarization
+        pp = np.array([0,0,1])
+        
+        # The force that should be the same
+        force_etalon = ix.ray_force(c, R, o, l, pp, nr)
+        
+        # Vary the (linear) polarization angle
+        for th_p in np.linspace(0, np.pi/2, 20):
+            p = np.array([0,np.cos(th_p),np.sin(th_p)])
+            force = ix.ray_force(c, R, o, l, p, nr)
+            
+            self.assertAlmostEqual(npl.norm(force-force_etalon), 0)
+            
+    def test_force_circular_polarization_invariance(self):
+        # The force magnitude of a circularly polarized ray should be invariant before certain rotations
+        c = np.array([5,0,0])
+        R = 1
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        o = np.array([0,0,R/3])
+        l = np.array([1,0,0])
+        
+        # Circular polarization
+        pc = np.array([0,1,1j])
+        
+        # The force that should be the same
+        force_etalon = ix.ray_force(c, R, o, l, pc, nr)
+        
+        # Vary the spot where the ray hits (i.e. rotate the sphere)
+        for th_p in np.linspace(0, np.pi/2, 20):
+            on = np.array([0,R/3*np.sin(th_p),R/3*np.cos(th_p)])
+            force = ix.ray_force(c, R, on, l, pc, nr)
+            
+            self.assertAlmostEqual(npl.norm(force)-npl.norm(force_etalon), 0)
+            
+    def test_force_radial_polarization_invariance(self):
+        # The force magnitude of a radially-polarized ray should not change before certain rotations
+        c = np.array([5,0,0])
+        R = 1
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        o = np.array([0,0,R/3])
+        l = np.array([1,0,0])
+        
+        # p-polarization
+        pp = np.array([0,0,1])
+        
+        # The force that should be the same
+        force_etalon = ix.ray_force(c, R, o, l, pp, nr)
+        
+        # Vary the (linear) polarization angle together with the rotation of the incidence plane
+        for th_p in np.linspace(0, np.pi/2, 20):
+            on = np.array([0,R/3*np.sin(th_p),R/3*np.cos(th_p)])
+            p = np.array([0,np.sin(th_p),np.cos(th_p)])
+            force = ix.ray_force(c, R, on, l, p, nr)
+            
+            self.assertAlmostEqual(npl.norm(force)-npl.norm(force_etalon), 0)
+            
 if __name__ == '__main__':
     unittest.main()

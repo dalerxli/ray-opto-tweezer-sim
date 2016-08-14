@@ -120,6 +120,10 @@ def ray_force(c, R, o, l, p, nr):
     # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
     Pp = (np.abs(np.dot(p, dir_grad))**2 + np.abs(np.dot(p, dir_scat))**2)/(npl.norm(p)**2)
     
+    # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
+    if 1 < Pp < 1+1e-7:
+        Pp = 1
+    
     # Note: if dir_grad is null (when the ray is normal on the sphere), Pp will take some value between 0 and 1, but it won't matter since at normal incidence, Fresnel doesn't depend on the polarization
     
     T, R = fresnel(th, r, Pp, nr)
