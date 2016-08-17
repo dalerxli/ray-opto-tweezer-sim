@@ -24,8 +24,10 @@ class TestIntegration(unittest.TestCase):
             # The target function should return the intensity multiplied by r (for polar integration) as the first element
             return lint.unif(r, th, R)[0]
         
-        int_result = si.dblquad(unif_inten, 0, R, lambda x: 0, lambda x: 2*pi)
-        self.assertAlmostEqual(int_result, 1)
+        int_result = si.dblquad(unif_inten, 0, 2*np.pi, lambda x: 0, lambda x: R)
+        
+        self.assertLess(int_result[1], 1e-4)
+        self.assertAlmostEqual(int_result[0], 1)
         
 if __name__ == '__main__':
     unittest.main()
