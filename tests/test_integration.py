@@ -65,7 +65,7 @@ class TestIntegration(unittest.TestCase):
                 
                 self.assertLess(npl.norm(o + d*l - np.array([0,0,f])), 1e-8)
                 
-    # Finally, compare the total forces on the sphere to Ashkin's results
+    # Finally, compare the total forces on the sphere to some of Ashkin's results
     def test_force_uniform(self):
         f = 1e-3
         
@@ -75,29 +75,21 @@ class TestIntegration(unittest.TestCase):
         # A particle of rp=5e-6. Not necessary in this case, but I'll keep it.
         rp = 5e-6
         
+        # The relative index of refraction
         n = 1.2
-        
-        # The coordinates in this case are measured from the focal point. z is negative when closer to the lens.
-        zspace = np.linspace(-1.10*rp, -0.90*rp)
         
         # The particle will be centered
         x = 0
         y = 0
+        z = 1.01*rp
         
         # And the polarization is linear
         p = np.array([1,0,0])
         
-        # array to find force maxima
-        zforces = np.array([])
+        pos = np.array([x,y,z])
+        force = lint.simple_unif_integrate(pos, rp, n, R, f, p)
         
-        # Fill that array
-        for z in zspace:        
-            force = lint.simple_unif_integrate(x, y, z, rp, n, R, f, p)
-            
-            zforces = np.append(zforces, force[2])
-        
-        maxzforce = np.max(zforces)
-        self.assertLess(np.abs(maxzforce-0.276), 0.01)
+        self.assertLess(force[2]-(-0.276), 0.01)
     
 if __name__ == '__main__':
     unittest.main()
