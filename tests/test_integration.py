@@ -72,24 +72,30 @@ class TestIntegration(unittest.TestCase):
         # A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
         R = f * np.tan(np.arcsin(1.25/1.33))
         
-        # A particle of rp=5e-6. Not necessary in this case, but I'll keep it.
+        # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
         rp = 5e-6
-        
-        # The relative index of refraction
-        n = 1.2
-        
-        # The particle will be centered
-        x = 0
-        y = 0
-        z = 1.01*rp
         
         # And the polarization is linear
         p = np.array([1,0,0])
         
-        pos = np.array([x,y,z])
-        force = lint.simple_unif_integrate(pos, rp, n, R, f, p)
+        # Data from Ashkin, 1992
+        data = np.array([
+            [1.2, 0, 0, 1.01*rp, -0.276],
+            [1.4, 0, 0, 0.93*rp, -0.282],
+            [1.8, 0, 0, 0.88*rp, -0.171]
+            ])
         
-        self.assertLess(force[2]-(-0.276), 0.01)
+        def check(row):
+            n = row[0]
+            pos = row[1:4]
+            targetQ = row[4]
+            
+            force = lint.simple_unif_integrate(pos, rp, n, R, f, p)
+            
+            return np.abs(force[2] - targetQ)
+            
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        self.assertLess(np.max(res), 0.01)
     
 if __name__ == '__main__':
     unittest.main()
