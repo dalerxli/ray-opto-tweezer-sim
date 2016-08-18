@@ -80,9 +80,11 @@ class TestIntegration(unittest.TestCase):
         
         # Data from Ashkin, 1992
         data = np.array([
-            [1.2, 0, 0, 1.01*rp, -0.276],
-            [1.4, 0, 0, 0.93*rp, -0.282],
-            [1.8, 0, 0, 0.88*rp, -0.171]
+            #[1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
+            #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
+            [1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
+            #[1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
+            #[1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
             ])
         
         def check(row):
@@ -90,9 +92,12 @@ class TestIntegration(unittest.TestCase):
             pos = row[1:4]
             targetQ = row[4]
             
+            # Force index to check
+            i = row[5]
+            
             force = lint.simple_unif_integrate(pos, rp, n, R, f, p)
             
-            return np.abs(force[2] - targetQ)
+            return np.abs(force[int(i)] - targetQ)
             
         res = np.apply_along_axis(check, axis=1, arr=data)
         self.assertLess(np.max(res), 0.01)
