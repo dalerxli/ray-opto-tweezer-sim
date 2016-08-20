@@ -1,8 +1,6 @@
 import numpy as np
 import numpy.linalg as npl
 
-from numba import jit
-
 import scipy.integrate as si
 
 import logging
@@ -58,49 +56,48 @@ class OpticalSystem(object):
         return (T, R)
     
     def _intersection_angle(self):
-        return _aux_intersection_angle(self._l, self._o, self._c, self._Rp)
-        ## Make l (director of the line) unitary
-        #ln = self._l/npl.norm(self._l)
+        # Make l (director of the line) unitary
+        ln = self._l/npl.norm(self._l)
         
-        #oc = self._o - self._c
+        oc = self._o - self._c
         
-        ## Calculate the discriminant (to see whether there are any solutions)
-        #D = np.dot(ln, oc)**2 - np.dot(oc, oc) + self._Rp**2
-        #lgg.debug(D)
+        # Calculate the discriminant (to see whether there are any solutions)
+        D = np.dot(ln, oc)**2 - np.dot(oc, oc) + self._Rp**2
+        lgg.debug(D)
         
-        ## If there are no solutions, then there is nothing else to do
-        #if D < 0:
-            #return np.nan
+        # If there are no solutions, then there is nothing else to do
+        if D < 0:
+            return np.nan
         
-        ## Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
-        #d = -np.dot(ln, oc) + np.sqrt(D)
-        #lgg.debug(d)
+        # Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
+        d = -np.dot(ln, oc) + np.sqrt(D)
+        lgg.debug(d)
         
-        ## The point at which the intersection occurs is x:
-        #x = self._o + d*ln
+        # The point at which the intersection occurs is x:
+        x = self._o + d*ln
         
-        ## If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
-        #if np.all(x == np.array([0,0,0])):
-            #d = -np.dot(ln, oc) - np.sqrt(D)
-            #x = self._o + d*ln
+        # If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
+        if np.all(x == np.array([0,0,0])):
+            d = -np.dot(ln, oc) - np.sqrt(D)
+            x = self._o + d*ln
             
-        #lgg.debug(x)
+        lgg.debug(x)
         
-        ## The vector that points from the center of the sphere to the intersection is r:
-        #r = x - self._c
-        #lgg.debug(r)
+        # The vector that points from the center of the sphere to the intersection is r:
+        r = x - self._c
+        lgg.debug(r)
         
-        ## To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
-        #c_angle = np.abs(np.dot(ln, r)/self._Rp)
-        #lgg.debug(c_angle)
+        # To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
+        c_angle = np.abs(np.dot(ln, r)/self._Rp)
+        lgg.debug(c_angle)
         
-        ## And finally, return the angle (absolute value)
-        #if c_angle <= 1:
-            #pass
-        #elif (c_angle - 1) < 1e-5:
-            #c_angle = 1
+        # And finally, return the angle (absolute value)
+        if c_angle <= 1:
+            pass
+        elif (c_angle - 1) < 1e-5:
+            c_angle = 1
         
-        #return np.arccos(np.abs(c_angle))
+        return np.arccos(np.abs(c_angle))
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
@@ -195,48 +192,3 @@ class OpticalSystemSimpleUniform(OpticalSystem):
             Ft[i] = si.dblquad(lambda r,th: self._total_ray_force(r, th)[i], 0, 2*np.pi, lambda x: 0, lambda x: self._Rl, epsabs=1e-4, epsrel=1e-4)[0]
         
         return Ft
-
-@jit(nopython=True)
-def _aux_intersection_angle(l, o, c, Rp):
-    # Make l (director of the line) unitary
-    ln = l/np.sqrt(l[0]**2+l[1]**2+l[2]**2)
-    
-    oc = o - c
-    
-    # Calculate the discriminant (to see whether there are any solutions)
-    D = np.dot(ln, oc)**2 - np.dot(oc, oc) + Rp**2
-    #lgg.debug(D)
-    
-    # If there are no solutions, then there is nothing else to do
-    if D < 0:
-        return np.nan
-    
-    # Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
-    d = -np.dot(ln, oc) + np.sqrt(D)
-    #lgg.debug(d)
-    
-    # The point at which the intersection occurs is x:
-    x = o + d*ln
-    
-    # If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
-    if np.all(x == np.array([0,0,0])):
-        d = -np.dot(ln, oc) - np.sqrt(D)
-        x = o + d*ln
-        
-    #lgg.debug(x)
-    
-    # The vector that points from the center of the sphere to the intersection is r:
-    r = x - c
-    #lgg.debug(r)
-    
-    # To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
-    c_angle = np.abs(np.dot(ln, r)/Rp)
-    #lgg.debug(c_angle)
-    
-    # And finally, return the angle (absolute value)
-    if c_angle <= 1:
-        pass
-    elif (c_angle - 1) < 1e-5:
-        c_angle = 1
-    
-    return np.arccos(np.abs(c_angle))
