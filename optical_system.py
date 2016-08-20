@@ -48,9 +48,11 @@ class OpticalSystem(object):
         nr = self._nr
         
         # Calculate the reflectivities:
-        # #TODO avoid calling cos(angle) multiple times for the same angles
-        Rs = ((np.cos(th) - nr*np.cos(r))/(np.cos(th) + nr*np.cos(r)))**2
-        Rp = ((np.cos(r) - nr*np.cos(th))/(np.cos(r) + nr*np.cos(th)))**2
+        costh = np.cos(th)
+        cosr = np.cos(r)
+        
+        Rs = ((costh - nr*cosr)/(costh + nr*cosr))**2
+        Rp = ((cosr - nr*costh)/(cosr + nr*costh))**2
         
         # Calculate the final reflectivity and transmittivity
         R = Rs*(1-Pp) + Rp*Pp

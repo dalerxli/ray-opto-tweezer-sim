@@ -126,48 +126,63 @@ class SystemRefractionTestCase(unittest.TestCase):
         
         self.assertTrue(np.allclose(opt._snell(th), th))
             
-    #def test_fresnel_normal(self):
-        ## Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance
-        ## Note that Fresnel only really depends on the relative index.
-        ## Also note that the polarization is specified as the normalized power of p-polarization (Pp). Then, the power of the s-polarization is simply (1-Pp).
-        #nr = 1.5
-        #th = 0
-        #r = 0
+    def test_fresnel_normal(self):
+        # Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance
+        # Note that Fresnel only really depends on the relative index.
+        # Also note that the polarization is specified as the normalized power of p-polarization (Pp). Then, the power of the s-polarization is simply (1-Pp).
+        nr = 1.5
         
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        # Length of test sample
+        testlen = 20
         
-        #for Pp in [0, 0.1, 0.5, 0.8, 1]:
-            #T, R = opt._fresnel(th, r, Pp)
+        th = np.zeros(testlen)
+        r = np.zeros(testlen)
+        Pp = np.linspace(0, 1, testlen)
+        
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        
+        T, R = opt._fresnel(th, r, Pp)
             
-            #self.assertAlmostEqual(T+R, 1)
-            #self.assertAlmostEqual(R, ((1 - nr)/(1 + nr))**2)
+        self.assertTrue(np.allclose(T+R, 1))
+        self.assertTrue(np.allclose(R, ((1 - nr)/(1 + nr))**2))
             
-    #def test_fresnel_tangent(self):
-        ## The reflectivity should be 1 at tangent incidence, regardless of polarization
-        #nr = 1.5
-        #th = np.pi/2
+    def test_fresnel_tangent(self):
+        # The reflectivity should be 1 at tangent incidence, regardless of polarization
+        nr = 1.5
         
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        # Length of test sample
+        testlen = 20
         
-        #r = opt._snell(th)
+        th = np.pi/2 * np.ones(testlen)
+        r = np.zeros(testlen)
+        Pp = np.linspace(0, 1, testlen)
         
-        #for Pp in [0, 0.1, 0.5, 0.8, 1]:
-            #T, R = opt._fresnel(th, r, Pp)
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        
+        r = opt._snell(th)
+        
+        T, R = opt._fresnel(th, r, Pp)
+        
+        self.assertTrue(np.allclose(T+R, 1))
+        self.assertTrue(np.allclose(R, 1))
             
-            #self.assertAlmostEqual(T+R, 1)
-            #self.assertAlmostEqual(R, 1)
-            
-    #def test_fresnel_brewster(self):
-        ## The reflectivity of a p-polarized ray should be nearly 0 at Brewster's angle
-        #nr = 1.5
-        #th = np.arctan(nr)
+    def test_fresnel_brewster(self):
+        # The reflectivity of a p-polarized ray should be nearly 0 at Brewster's angle
+        nr = 1.5
         
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        # Length of test sample
+        testlen = 20
         
-        #r = opt._snell(th)
+        th = np.arctan(nr) * np.ones(testlen)
+        r = np.zeros(testlen)
+        Pp = np.ones(testlen)
         
-        #T, R = opt._fresnel(th, r, 1)
-        #self.assertAlmostEqual(R, 0)
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        
+        r = opt._snell(th)
+        
+        T, R = opt._fresnel(th, r, Pp)
+        self.assertTrue(np.allclose(R, 0))
         
 ## Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 ## The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
