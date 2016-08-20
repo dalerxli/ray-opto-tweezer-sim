@@ -2,6 +2,10 @@
 
 #define dblarg(x) atof(argv[x])
 
+
+Sphere s = Sphere();
+Lens l = Lens();
+
 // Since we accept normalized r, the beam width doesn't appear.
 // The total laser power is unity to independize the calculation of force 
 double intens(double r, double th)
@@ -9,6 +13,29 @@ double intens(double r, double th)
 	const double I0 = 8/M_PI;
     return I0*exp(-2*pow(2*r, 2));
 }
+
+int integrand(const int *ndim, const double xx[],
+    const int *ncomp, double ff[], void *userdata)
+{
+    return s.integrand(ndim, xx, ncomp, ff, userdata);
+}
+
+Vector3d get_total_force()
+{
+    int comp, nregions, neval, fail;
+    double total_force[3], error[3], prob[3];
+    
+    s.lens = &l;
+    
+    Cuhre(NDIM, NCOMP, integrand, USERDATA, NVEC,
+        EPSREL, EPSABS, VERBOSE | LAST,
+        MINEVAL, MAXEVAL, KEY,
+        STATEFILE, SPIN,
+        &nregions, &neval, &fail, total_force, error, prob);
+    
+    return Vector3d(total_force);
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -67,9 +94,6 @@ int main(int argc, char* argv[])
     const double dx = (x_final-x_init)/x_steps;
     const double dy = (y_final-y_init)/y_steps;
     const double dz = (z_final-z_init)/z_steps;
-    
-    Sphere s = Sphere();
-    Lens l = Lens();
     
     //l.set_df(df);
     l.set_intensity(&intens);
@@ -142,7 +166,7 @@ int main(int argc, char* argv[])
 				    
 				    // Get the force and independize it from the external 
 				    // refractive index and the laser power
-				    temp = s.get_total_force(l, dr, dth) * c / ne;
+				    temp = get_total_force() * c / ne;
 				    temp = temp * pow(0.5, double_trap);
 				    temp = temp.cwiseProduct(Vector3d(1,1,pow(-1, i)));
 				    

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <Eigen/Dense>
+#include <cuba.h>
 #include <cmath>
 
 using namespace Eigen;
@@ -99,6 +100,8 @@ class Sphere
         Vector3d current_force;
         
     public:
+        Lens* lens;
+        
         void set_n(double n)
         {
             this->n = n;
@@ -117,5 +120,9 @@ class Sphere
         Vector3d& get_force(Ray& ray);
 
 		// Force due to all the rays with the specified steps
-		Vector3d get_total_force(Lens& l, double dr, double dth);
+// 		Vector3d get_total_force(Lens* l, double dr, double dth);
+        
+        // Integrand to be integrated by CUBA
+        int integrand(const int *ndim, const double xx[],
+            const int *ncomp, double ff[], void *userdata);
 };

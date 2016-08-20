@@ -133,16 +133,37 @@ Vector3d& Sphere::get_force(Ray& ray)
     return this->current_force;
 }
 
-Vector3d Sphere::get_total_force(Lens& l, double dr, double dth)
+int Sphere::integrand(const int *ndim, const double xx[],
+const int *ncomp, double ff[], void *userdata)
 {
-	Vector3d force = Vector3d(0,0,0);
-	for (double r=0; r<=1; r+= dr)
-	{
-		for (double th = 0; th <= 2*M_PI; th+= dth)
-		{
-		    force += this->get_force(l.get_ray(r, th))*dr*dth;
-		}
-	}
-	
-	return force;
+    Vector3d force = Vector3d(0,0,0);
+    force = this->get_force(this->lens->get_ray(xx[0], xx[1]));
+    
+    for (int i=0; i<3; i++) ff[i] = force[i];
+    
+    return 0;
 }
+/*
+Vector3d Sphere::get_total_force(Lens* l, double dr, double dth)
+{
+    int comp, nregions, neval, fail;
+    double total_force[3], error[3], prob[3];
+    
+    this->lens = l;
+    
+    
+    Cuhre(NDIM, NCOMP, this->integrand, USERDATA, NVEC,
+        EPSREL, EPSABS, VERBOSE | LAST,
+        MINEVAL, MAXEVAL, KEY,
+        STATEFILE, SPIN,
+        &nregions, &neval, &fail, total_force, error, prob);
+// 	for (double r=0; r<=1; r+= dr)
+// 	{
+// 		for (double th = 0; th <= 2*M_PI; th+= dth)
+// 		{
+// 		    force += this->get_force(l.get_ray(r, th))*dr*dth;
+// 		}
+// 	}
+	
+	return Vector3d(total_force);
+}*/
