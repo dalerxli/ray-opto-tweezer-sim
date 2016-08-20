@@ -8,6 +8,10 @@ import logging
 logging.basicConfig(level=logging.INFO)
 lgg = logging.getLogger("intersection_module")
 
+# Calculates the dot product of rows of two matrices
+def dot_rows(a, b):
+    return np.einsum('ij,ij->i', a, np.conj(b))
+
 class OpticalSystem(object):
     def __init__(self, c, Rp, nr):
         # Particle properties
@@ -71,10 +75,10 @@ class OpticalSystem(object):
         # Calculate the discriminant (to see whether there are any solutions)
         
         # The dot products between ln's and oc's because it will be used a lot later
-        ln_dot_oc = np.einsum('ij,ij->i', ln, oc)
+        ln_dot_oc = dot_rows(ln, oc)
         
         # Norms squared of oc's (because this operation is more efficient)
-        oc_dot_oc = np.einsum('ij,ij->i', oc, oc)
+        oc_dot_oc = dot_rows(oc, oc)
         
         D = ln_dot_oc**2 - oc_dot_oc + self._Rp**2
         
@@ -106,7 +110,7 @@ class OpticalSystem(object):
         lgg.debug(r)
         
         # To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
-        c_angles = np.abs(np.einsum('ij,ij->i', ln, r)/self._Rp)
+        c_angles = np.abs(dot_rows(ln, r)/self._Rp)
         lgg.debug(c_angles)
         
         # Sometimes due to floating-point errors, the value will be slightly higher than 1. The following corrects it:
@@ -118,36 +122,33 @@ class OpticalSystem(object):
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
     def _ray_force(self, p):
-        # Calculate the incidence angle first. If its = nan, then there is no intersection and the force is zero:
+        # Calculate the incidence angle first. NaN values will be passed because they will be filtered later
         th = self._intersection_angle()
-        if np.isnan(th):
-            return np.array([0,0,0])
         
         ## First we have to determine the coordinate system for the gradient and scattering forces:
         # The scattering force direction, according to Ashkin, 1992, is along the ray propagation direction:
-        dir_scat = self._l/npl.norm(self._l)
+        dir_scat = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
         
         # The gradient force direction (Ashkin, 1992) is orthogonal to the ray propagation direction and lies in the plane formed by the ray and the center of the sphere. For that, we first make a vector that points from the center of the sphere to one of the points in the line and Gram-Schmidt orthogonalize it to make a vector perpendicular to the scattering
-        a = self._o- self._c
+        a = self._o - self._c
         
-        dir_grad = a - np.dot(a, dir_scat)*dir_scat
+        dir_grad = a - dot_rows(a, dir_scat)*dir_scat
         
-        # If the rays passes through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence:
-        if not np.all(dir_grad == np.array([0,0,0])):
-            dir_grad = dir_grad / npl.norm(dir_grad)
+        # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence:
+        #if not np.all(dir_grad == np.array([0,0,0])):
+            #dir_grad = dir_grad / npl.norm(dir_grad)
             
         # The magnitudes of the forces are specified in Ashkin, 1992. First let's calculate some auxiliary quantities:
         
-        # Refraction angle:
+        # Refraction angles:
         r = self._snell(th)
         
         # Transmission and reflection coefficients
         # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
-        Pp = (np.abs(np.dot(p, dir_grad))**2 + np.abs(np.dot(p, dir_scat))**2)/(npl.norm(p)**2)
+        Pp = (np.abs(dpt_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)/(npl.norm(p, axis=1).reshape(-1,1)**2)
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
-        if 1 < Pp < 1+1e-7:
-            Pp = 1
+        Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
         
         # Note: if dir_grad is null (when the ray is normal on the sphere), Pp will take some value between 0 and 1, but it won't matter since at normal incidence, Fresnel doesn't depend on the polarization
         
@@ -161,7 +162,7 @@ class OpticalSystem(object):
         
         # And calculate the total force:
         # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
-        F = Fs*dir_scat - Fg*dir_grad
+        F = Fs.reshape(-1,1)*dir_scat - Fg.reshape(-1,1)*dir_grad
         
         return F
     

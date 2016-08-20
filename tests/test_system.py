@@ -193,13 +193,13 @@ class SystemRefractionTestCase(unittest.TestCase):
         ## The origin of the ray will be on the sphere for simpler calculations:
         #c = np.array([1,0,0])
         #R = 1
-        #o = np.array([0,0,0])
+        #o = np.array([[0,0,0]])
         
         #opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
         #opt._c = c
         
         ## And this is the polarization of the ray in Jones notation (circular)
-        #p = np.array([1,1j,0])
+        #p = np.array([[1,1j,0]])
         
         #data = np.array([
             #[1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
