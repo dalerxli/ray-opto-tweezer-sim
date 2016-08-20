@@ -76,28 +76,26 @@ class OpticalSystem(object):
         
         D = ln_dot_oc**2 - oc_dot_oc + self._Rp**2
         
+        # Discriminant values below zero indicate no intersection, which we will denote by NaN
+        D[D < 0] = np.nan
+        
         # For convenience, calculate the square root of the determinants, as this will be used later a couple of times
         sqrtD = np.sqrt(D)
         
         lgg.debug(D)
         
-        # If there are no solutions, then there is nothing else to do
-        # TODO: redo this for numpy arrays
-        if D < 0:
-            return np.nan
-        
         # Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
         d = -ln_dot_oc + sqrtD
         lgg.debug(d)
         
-        # The point at which the intersection occurs is x:
+        # The points at which the intersections occur is x:
         x = self._o + d*ln
         
-        # If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
-        # TODO: redo for numpy arrays
-        if np.all(x == np.array([0,0,0])):
-            d = -np.dot(ln, oc) - np.sqrt(D)
-            x = self._o + d*ln
+        ## If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
+        ## TODO: redo for numpy arrays
+        #if np.all(x == np.array([0,0,0])):
+            #d = -np.dot(ln, oc) - np.sqrt(D)
+            #x = self._o + d*ln
             
         lgg.debug(x)
         
@@ -106,15 +104,13 @@ class OpticalSystem(object):
         lgg.debug(r)
         
         # To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
-        c_angle = np.abs(np.dot(ln, r)/self._Rp)
-        lgg.debug(c_angle)
+        c_angles = np.abs(np.einsum('ij,ij->i', ln, r)/self._Rp)
+        lgg.debug(c_angles)
+        
+        # Sometimes due to floating-point errors, the value will be slightly higher than 1. The following corrects it:
+        c_angles[(c_angles > 1) & (c_angles < 1+1e-8)] = 1
         
         # And finally, return the angle (absolute value)
-        if c_angle <= 1:
-            pass
-        elif (c_angle - 1) < 1e-5:
-            c_angle = 1
-        
         return np.arccos(np.abs(c_angle))
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
