@@ -102,28 +102,29 @@ class OpticalSystemIntersectionTestCase(unittest.TestCase):
                 opt = osys.OpticalSystem(np.array([4,0,0]), R, 1.5)
                 
 ## Testing the helper functions to calculate the angle of refraction and the coefficients of transmission/reflection
-#class SystemRefractionTestCase(unittest.TestCase):
-    #def test_snell_normal(self):
-        ## At normal incidence, the angle stays zero:
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
-        #r = opt._snell(0)
+class SystemRefractionTestCase(unittest.TestCase):
+    def test_snell_normal(self):
+        # At normal incidence, the angle stays zero:
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
+        r = opt._snell(np.array([0]))
         
-        #self.assertAlmostEqual(r, 0)
+        self.assertAlmostEqual(r[0], 0)
         
-    #def test_snell_tangent(self):
-        ## At tangent incidence, the refr. angle should be critical:
-        #nr = 1.5
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
-        #r = opt._snell(np.pi/2)
+    def test_snell_tangent(self):
+        # At tangent incidence, the refr. angle should be critical:
+        nr = 1.5
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        r = opt._snell(np.array([np.pi/2]))
         
-        #self.assertAlmostEqual(np.sin(r), 1/nr)
+        self.assertAlmostEqual(np.sin(r)[0], 1/nr)
         
-    #def test_snell_homogeneous(self):
-        ## If the relative index is 1, then there should be no change of propagation at all
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1)
+    def test_snell_homogeneous(self):
+        # If the relative index is 1, then there should be no change of propagation at all
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1)
         
-        #for th in [0, np.pi/3, np.pi/4, np.pi/5]:
-            #self.assertAlmostEqual(opt._snell(th), th)
+        th = np.array([0, np.pi/3, np.pi/4, np.pi/5])
+        
+        self.assertTrue(np.allclose(opt._snell(th), th))
             
     #def test_fresnel_normal(self):
         ## Test Fresnel at normal incidence. It should not depend on the polarization, and the energy must be conserved between the transmittance and reflectance

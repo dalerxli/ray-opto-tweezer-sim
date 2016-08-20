@@ -36,8 +36,8 @@ class OpticalSystem(object):
     # theta can be a 1D numpy array. Then, the return value will be also be a numpy array (Snell's law applied to each element)
     def _snell(self, theta):
         # Raise exception if the angle is out of the [0,pi/2] range
-        if not 0 <= theta <= np.pi/2:
-            raise ValueError("Incidence angle out of range: {0}".format(theta))
+        if np.any((theta < 0) | (theta > np.pi/2)):
+            raise ValueError("Incidence angle out of range")
         
         return np.arcsin(1/self._nr * np.sin(theta))
     
