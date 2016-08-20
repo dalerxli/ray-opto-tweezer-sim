@@ -33,18 +33,22 @@ class OpticalSystem(object):
             raise ValueError("The sphere refractive index is not valid: {0}".format(nr))
     
     # Calculates the refraction angle given the incidence angle and the relative index of refraction
+    # theta can be a 1D numpy array. Then, the return value will be also be a numpy array (Snell's law applied to each element)
     def _snell(self, theta):
         # Raise exception if the angle is out of the [0,pi/2] range
         if not 0 <= theta <= np.pi/2:
             raise ValueError("Incidence angle out of range: {0}".format(theta))
         
-        return np.arcsin(1/self._nr*np.sin(theta))
+        return np.arcsin(1/self._nr * np.sin(theta))
     
     # Calculates the transmission and reflection for a ray with a given incidence angle (th), refraction angle (r), and polarization angle (p) when the relative index of refraction is specified (nr)
     # Also note that the polarization is specified as the normalized power of p-polarization (Pp). Then, the power of the s-polarization is simply (1-Pp).
+    # The arguments can be numpy arrays, but then they will have to be 1D and have the same length.
     def _fresnel(self, th, r, Pp):
         nr = self._nr
+        
         # Calculate the reflectivities:
+        # #TODO avoid calling cos(angle) multiple times for the same angles
         Rs = ((np.cos(th) - nr*np.cos(r))/(np.cos(th) + nr*np.cos(r)))**2
         Rp = ((np.cos(r) - nr*np.cos(th))/(np.cos(r) + nr*np.cos(th)))**2
         
@@ -57,26 +61,40 @@ class OpticalSystem(object):
     
     def _intersection_angle(self):
         # Make l (director of the line) unitary
-        ln = self._l/npl.norm(self._l)
+        ln = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
         
+        # Note: self._o and self_c should be (N x 3) matrices with N the number of rays considered
         oc = self._o - self._c
         
         # Calculate the discriminant (to see whether there are any solutions)
-        D = np.dot(ln, oc)**2 - np.dot(oc, oc) + self._Rp**2
+        
+        # The dot products between ln's and oc's because it will be used a lot later
+        ln_dot_oc = np.einsum('ij,ij->i', ln, oc)
+        
+        # Norms squared of oc's (because this operation is more efficient)
+        oc_dot_oc = np.einsum('ij,ij->i', oc, oc)
+        
+        D = ln_dot_oc**2 - oc_dot_oc + self._Rp**2
+        
+        # For convenience, calculate the square root of the determinants, as this will be used later a couple of times
+        sqrtD = np.sqrt(D)
+        
         lgg.debug(D)
         
         # If there are no solutions, then there is nothing else to do
+        # TODO: redo this for numpy arrays
         if D < 0:
             return np.nan
         
         # Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
-        d = -np.dot(ln, oc) + np.sqrt(D)
+        d = -ln_dot_oc + sqrtD
         lgg.debug(d)
         
         # The point at which the intersection occurs is x:
         x = self._o + d*ln
         
         # If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
+        # TODO: redo for numpy arrays
         if np.all(x == np.array([0,0,0])):
             d = -np.dot(ln, oc) - np.sqrt(D)
             x = self._o + d*ln
