@@ -4,6 +4,7 @@ import numpy.linalg as npl
 import scipy.integrate as si
 
 import line_profiler
+import numba
 
 # Calculates the dot product of rows of two matrices
 def dot_rows(a, b):
@@ -143,7 +144,7 @@ class OpticalSystem(object):
         
         # Note: if dir_grad is null (when the ray is normal on the sphere), Pp will take some value between 0 and 1, but it won't matter since at normal incidence, Fresnel doesn't depend on the polarization
         
-        T, R = self._fresnel(th, r, Pp)
+        T, R = jit_fresnel(self._nr, th, r, Pp)
         
         # And finally, the scattering force magnitude:
         # First, some auxiliary arrays (to not compute them twice):
@@ -228,3 +229,19 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         Ft = dr*dth*np.sum(forces, axis=0)
         
         return Ft
+
+@numba.jit(nopython=True)
+def jit_fresnel(nr, th, r, Pp):
+    # Calculate the reflectivities:
+    costh = np.cos(th)
+    cosr = np.cos(r)
+    
+    Rs = ((costh - nr*cosr)/(costh + nr*cosr))**2
+    Rp = ((cosr - nr*costh)/(cosr + nr*costh))**2
+    
+    # Calculate the final reflectivity and transmittivity
+    R = Rs*(1-Pp) + Rp*Pp
+    T = 1 - R
+    
+    # And return the value
+    return (T, R)
