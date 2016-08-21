@@ -145,7 +145,8 @@ class OpticalSystem(object):
         
         # Transmission and reflection coefficients
         # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
-        Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)/(npl.norm(p, axis=1).reshape(-1,1)**2)
+        Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)#/(npl.norm(p, axis=1).reshape(-1,1)**2)
+        print(Pp.shape)
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
         Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
@@ -162,7 +163,9 @@ class OpticalSystem(object):
         
         # And calculate the total force:
         # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
-        F = Fs*dir_scat - Fg*dir_grad
+        #print(T.shape)
+        #print(Fs.shape)
+        F = Fs.reshape(-1,1)*dir_scat - Fg.reshape(-1,1)*dir_grad
         
         return F
     
@@ -203,7 +206,7 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         
         F = self._ray_force(np.tile(self._p, (len(self._o), 1)))
     
-        return (r/(np.pi * self._Rl**2))*F
+        return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
     
     def integrate(self, rsteps, thsteps):
         rrange = np.linspace(0, self._Rl, rsteps)

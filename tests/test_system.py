@@ -247,7 +247,7 @@ class TestIntegration(unittest.TestCase):
         # Data from Ashkin, 1992
         data = np.array([
             [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
-            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
+            #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
             #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
             [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
             [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
@@ -264,7 +264,7 @@ class TestIntegration(unittest.TestCase):
             opt.set_particle_center(pos)
             opt.set_particle_index(n)
             
-            force = opt.integrate(3, 3)
+            force = opt.integrate(200, 200)
             
             return np.abs(force[int(i)] - targetQ)
             
