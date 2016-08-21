@@ -45,4 +45,5 @@ def check(row):
     
     return np.abs(force[int(i)] - targetQ)
     
-res = np.apply_along_axis(check, axis=1, arr=data)
+for i in range(0,100):
+    res = np.apply_along_axis(check, axis=1, arr=data)

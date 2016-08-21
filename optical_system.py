@@ -9,6 +9,10 @@ import line_profiler
 def dot_rows(a, b):
     return np.einsum('ij,ij->i', a, np.conj(b))
 
+# Normalizes an array of vectors (of dimension (N,3)). Note that we are using einsum instead of norm as it's almost twice as fast
+def normalize(a):
+    return a / np.sqrt(np.einsum('ij,ij->i', a, np.conj(a))).reshape(-1,1)
+
 class OpticalSystem(object):
     def __init__(self, c, Rp, nr):
         # Particle properties
@@ -64,7 +68,7 @@ class OpticalSystem(object):
     
     def _intersection_angle(self):
         # Make l (director of the line) unitary
-        self._l = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
+        self._l = normalize(self._l)
         ln = self._l
         
         # Note: self._o and self_c should be (N x 3) matrices with N the number of rays considered
@@ -120,7 +124,7 @@ class OpticalSystem(object):
         dir_grad = a - dot_rows(a, dir_scat).reshape(-1,1)*dir_scat
         
         # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence. Otherwise, we have to normalize dir_grad
-        dir_grad = dir_grad / npl.norm(dir_grad, axis=1).reshape(-1,1)
+        dir_grad = normalize(dir_grad)# / npl.norm(dir_grad, axis=1).reshape(-1,1)
         
         # Now remove the undefined values (division by zero)
         dir_grad[np.isnan(dir_grad)] = 0
