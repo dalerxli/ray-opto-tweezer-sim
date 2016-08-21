@@ -106,6 +106,7 @@ class OpticalSystem(object):
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
+    @profile
     def _ray_force(self, p):
         # Calculate the incidence angle first. NaN values will be passed because they will be filtered later
         th = self._intersection_angle()
