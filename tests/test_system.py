@@ -265,7 +265,6 @@ class TestIntegration(unittest.TestCase):
             opt.set_particle_index(n)
             
             force = opt.integrate(200, 200)
-            print(force.shape)
             
             return force[int(i)] + targetQ
             

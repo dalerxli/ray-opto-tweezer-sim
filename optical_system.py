@@ -96,12 +96,6 @@ class OpticalSystem(object):
         
         # The points at which the intersections occur is x:
         x = self._o + d.reshape(-1,1)*ln
-        
-        ## If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
-        ## TODO: redo for numpy arrays
-        #if np.all(x == np.array([0,0,0])):
-            #d = -np.dot(ln, oc) - np.sqrt(D)
-            #x = self._o + d*ln
             
         lgg.debug(x)
         
@@ -145,7 +139,11 @@ class OpticalSystem(object):
         
         # Transmission and reflection coefficients
         # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
-        Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)#/(npl.norm(p, axis=1).reshape(-1,1)**2)
+        # First, normalize calculate the norm squared of the polarization for each ray
+        pn = dot_rows(p, p)
+        
+        # Then, use it to calculate the projection of the polarization on the incidence plane
+        Pp = np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2/pn
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
         Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
@@ -177,7 +175,7 @@ class OpticalSystemSimpleUniform(OpticalSystem):
     def __init__(self, c, Rp, nr, Rl, f, p):
         super().__init__(c, Rp, nr)
         
-        self._p = p
+        self._p_single = p
         
         self.set_focal_distance(f)
         self.set_lens_radius(Rl)
@@ -203,12 +201,14 @@ class OpticalSystemSimpleUniform(OpticalSystem):
     # Returns the total force by single rays (multiplied by r for polar integration)
     def _total_ray_force(self, r, th):
         n_rays = len(r)
-        self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
-        #print(self._o)
-        self._l = np.tile(np.array([0, 0, self._f]), (len(self._o), 1)) - self._o
-        #print(self._l)
         
-        F = self._ray_force(np.tile(self._p, (len(self._o), 1)))
+        self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
+        self._l = np.tile(np.array([0, 0, self._f]), (n_rays, 1)) - self._o
+        
+        # Make the polarization vectors have the correct dimension
+        self._p = np.tile(self._p_single, (n_rays, 1))
+        
+        F = self._ray_force(self._p)
     
         return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
     
@@ -225,10 +225,6 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         dth = 2*np.pi/(thsteps-1)
         
         forces = self._total_ray_force(rs, ths)
-        print(forces.shape)
         Ft = dr*dth*np.sum(forces, axis=0)
-        print(Ft.shape)
-        #for i in range(0,3):
-            #Ft[i] = si.dblquad(lambda r,th: self._total_ray_force(r, th)[i], 0, 2*np.pi, lambda x: 0, lambda x: self._Rl, epsabs=1e-4, epsrel=1e-4)[0]
         
         return Ft
