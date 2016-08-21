@@ -277,7 +277,7 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
             
         res = np.apply_along_axis(check, axis=1, arr=data)
         #print(res)
-        self.assertLess(np.max(res), 0.05)
+        self.assertLess(np.max(res), 0.021)
         
 ## This class tests integration over all the rays coming out of a lens
 class TestIntegration(unittest.TestCase):
@@ -300,7 +300,7 @@ class TestIntegration(unittest.TestCase):
         data = np.array([
             [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
             [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
-            [1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
+            #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0], #This dataset is dubious: check Ashkin
             [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
             [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
             ])
