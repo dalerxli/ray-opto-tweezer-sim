@@ -187,6 +187,58 @@ class SystemRefractionTestCase(unittest.TestCase):
 ## Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 ## The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
 class SphereIntersectionForceTestCase(unittest.TestCase):
+    def test_force_normal(self):
+        # The ray is normally incident on the sphere
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([[0,0,0]])
+        l = np.array([[1,0,0]])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([[1,0,0]])
+        
+        opt = osys.OpticalSystem(c, R, nr)
+        opt._c = np.array([c])
+        opt._l = l
+        opt._o = o
+        
+        forces = opt._ray_force(p)
+        
+        # There should be a force towards +x
+        self.assertGreater(forces[0,0], 0)
+        
+        # And the forces in the other directions should be zero
+        self.assertTrue(np.allclose(forces[0,1:], 0))
+    
+    def test_force_sign(self):
+        # The ray is a bit displaced to the top
+        c = np.array([5,0,0])
+        R = 1
+        o = np.array([[0,0,0.1]])
+        l = np.array([[1,0,0]])
+        
+        # This is the relative refractive index of the sphere
+        nr = 1.5
+        
+        # And this is the polarization of the ray in Jones notation
+        p = np.array([[1,0,0]])
+        
+        opt = osys.OpticalSystem(c, R, nr)
+        opt._c = np.array([c])
+        opt._l = l
+        opt._o = o
+        
+        forces = opt._ray_force(p)
+        
+        # Since the ray will be refracted towards -z, the force should be towards +z
+        self.assertGreater(forces[0,2], 0)
+        
+        # And there should be a force towards +x
+        self.assertGreater(forces[0,0], 0)
+    
     def test_force_ashkin(self):
         # Test the maximum gradient forces published in Ashkin, 1992
         
@@ -246,9 +298,9 @@ class TestIntegration(unittest.TestCase):
         
         # Data from Ashkin, 1992
         data = np.array([
-            #[1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
+            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
             #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
-            [1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
+            #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
             #[1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
             #[1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
             ])
@@ -264,9 +316,9 @@ class TestIntegration(unittest.TestCase):
             opt.set_particle_center(pos)
             opt.set_particle_index(n)
             
-            force = opt.integrate(200, 200)
+            force = opt.integrate(400, 400)
             
-            return force[int(i)] + targetQ
+            return np.abs(force[int(i)] - targetQ)
             
         res = np.apply_along_axis(check, axis=1, arr=data)
         self.assertLess(np.max(res), 0.01)
