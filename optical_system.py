@@ -95,7 +95,7 @@ class OpticalSystem(object):
         lgg.debug(d)
         
         # The points at which the intersections occur is x:
-        x = self._o + d*ln
+        x = self._o + d.reshape(-1,1)*ln
         
         ## If x is zero (which would be a problem when calculating its inverse norm), switch to the other point:
         ## TODO: redo for numpy arrays
@@ -132,7 +132,7 @@ class OpticalSystem(object):
         # The gradient force direction (Ashkin, 1992) is orthogonal to the ray propagation direction and lies in the plane formed by the ray and the center of the sphere. For that, we first make a vector that points from the center of the sphere to one of the points in the line and Gram-Schmidt orthogonalize it to make a vector perpendicular to the scattering
         a = self._o - self._c
         
-        dir_grad = a - dot_rows(a, dir_scat)*dir_scat
+        dir_grad = a - dot_rows(a, dir_scat).reshape(-1,1)*dir_scat
         
         # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence:
         #if not np.all(dir_grad == np.array([0,0,0])):
@@ -145,7 +145,7 @@ class OpticalSystem(object):
         
         # Transmission and reflection coefficients
         # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
-        Pp = (np.abs(dpt_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)/(npl.norm(p, axis=1).reshape(-1,1)**2)
+        Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)/(npl.norm(p, axis=1).reshape(-1,1)**2)
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
         Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
@@ -162,7 +162,7 @@ class OpticalSystem(object):
         
         # And calculate the total force:
         # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
-        F = Fs.reshape(-1,1)*dir_scat - Fg.reshape(-1,1)*dir_grad
+        F = Fs*dir_scat - Fg*dir_grad
         
         return F
     
@@ -175,7 +175,7 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         self.set_focal_distance(f)
         self.set_lens_radius(Rl)
         
-        self._c = np.array([0, 0, f]) + c
+        self._c = np.array([np.array([0, 0, f]) + c])
         
     def set_focal_distance(self, f):
         if f > 0:
@@ -191,21 +191,35 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         
     # Sets the position of the particle relative to the focal spot
     def set_particle_center(self, c):
-        self._c = np.array([0, 0, self._f]) + c
+        self._c = np.array([np.array([0, 0, self._f]) + c])
         
-    # Returns the total force by a single ray in this case
+    # Returns the total force by single rays (multiplied by r for polar integration)
     def _total_ray_force(self, r, th):
-        self._o = np.array([r*np.cos(th), r*np.sin(th), 0])
-        self._l = np.array([0, 0, self._f]) - self._o
+        n_rays = len(r)
+        self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
+        #print(self._o)
+        self._l = np.tile(np.array([0, 0, self._f]), (len(self._o), 1)) - self._o
+        #print(self._l)
         
-        F = self._ray_force(self._p)
+        F = self._ray_force(np.tile(self._p, (len(self._o), 1)))
     
         return (r/(np.pi * self._Rl**2))*F
     
-    def integrate(self):
-        Ft = np.array([np.nan, np.nan, np.nan])
+    def integrate(self, rsteps, thsteps):
+        rrange = np.linspace(0, self._Rl, rsteps)
+        thrange = np.linspace(0, 2*np.pi, thsteps)
         
-        for i in range(0,3):
-            Ft[i] = si.dblquad(lambda r,th: self._total_ray_force(r, th)[i], 0, 2*np.pi, lambda x: 0, lambda x: self._Rl, epsabs=1e-4, epsrel=1e-4)[0]
+        # Create the values on which the function will be evaluated
+        rs,ths = np.meshgrid(rrange, thrange)
+        rs = rs.flatten()
+        ths = ths.flatten()
+        
+        dr = self._Rl/(rsteps-1)
+        dth = 2*np.pi/(thsteps-1)
+        
+        Ft = dr*dth*np.sum(self._total_ray_force(rs, ths), axis=1)
+        
+        #for i in range(0,3):
+            #Ft[i] = si.dblquad(lambda r,th: self._total_ray_force(r, th)[i], 0, 2*np.pi, lambda x: 0, lambda x: self._Rl, epsabs=1e-4, epsrel=1e-4)[0]
         
         return Ft

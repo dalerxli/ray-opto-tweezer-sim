@@ -186,86 +186,87 @@ class SystemRefractionTestCase(unittest.TestCase):
         
 ## Test of a higher-level function that returns the Q-force (explained below) of a single ray incident on a sphere
 ## The Q force is the force exerted by a single ray, but divided by (P*n_1/c) to not depend on the power of this ray and other factors that will have to be included later (see Ashkin, 1992)
-#class SphereIntersectionForceTestCase(unittest.TestCase):
-    #def test_force_ashkin(self):
-        ## Test the maximum gradient forces published in Ashkin, 1992
+class SphereIntersectionForceTestCase(unittest.TestCase):
+    def test_force_ashkin(self):
+        # Test the maximum gradient forces published in Ashkin, 1992
         
-        ## The origin of the ray will be on the sphere for simpler calculations:
-        #c = np.array([1,0,0])
-        #R = 1
-        #o = np.array([[0,0,0]])
+        # The origin of the ray will be on the sphere for simpler calculations:
+        c = np.array([1,0,0])
+        R = 1
+        o = np.array([[0,0,0]])
         
-        #opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
-        #opt._c = c
+        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
+        opt._c = np.array([c])
         
-        ## And this is the polarization of the ray in Jones notation (circular)
-        #p = np.array([[1,1j,0]])
+        # And this is the polarization of the ray in Jones notation (circular)
+        p = np.array([[1,1j,0]])
         
-        #data = np.array([
-            #[1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
-            #[1.2, np.sqrt(0.506**2 + 0.341**2), 72*np.pi/180],
-            #[1.4, np.sqrt(0.566**2 + 0.448**2), 64*np.pi/180],
-            #[1.6, np.sqrt(0.570**2 + 0.535**2), 60*np.pi/180],
-            #[1.8, np.sqrt(0.547**2 + 0.625**2), 59*np.pi/180],
-            #[2.0, np.sqrt(0.510**2 + 0.698**2), 59*np.pi/180],
-            #[2.5, np.sqrt(0.405**2 + 0.837**2), 64*np.pi/180]
-            #])
+        data = np.array([
+            [1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
+            [1.2, np.sqrt(0.506**2 + 0.341**2), 72*np.pi/180],
+            [1.4, np.sqrt(0.566**2 + 0.448**2), 64*np.pi/180],
+            [1.6, np.sqrt(0.570**2 + 0.535**2), 60*np.pi/180],
+            [1.8, np.sqrt(0.547**2 + 0.625**2), 59*np.pi/180],
+            [2.0, np.sqrt(0.510**2 + 0.698**2), 59*np.pi/180],
+            [2.5, np.sqrt(0.405**2 + 0.837**2), 64*np.pi/180]
+            ])
         
-        #def check(row):
-            #th = row[2]
-            #Q = row[1]
-            #nr = row[0]
+        def check(row):
+            th = row[2]
+            Q = row[1]
+            nr = row[0]
             
-            #opt.set_particle_index(nr)
+            opt.set_particle_index(nr)
             
-            #opt._l = np.array([np.cos(th), 0, np.sin(th)])
-            #force = opt._ray_force(p)
+            opt._l = np.array([[np.cos(th), 0, np.sin(th)]])
+            forces = opt._ray_force(p)
             
-            #return np.abs(npl.norm(force) - Q)
+            return np.abs(npl.norm(forces[0,:]) - Q)
             
-        #res = np.apply_along_axis(check, axis=1, arr=data)
-        #self.assertLess(np.max(res), 0.021)
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        #print(res)
+        self.assertLess(np.max(res), 0.05)
         
 ## This class tests integration over all the rays coming out of a lens
-#class TestIntegration(unittest.TestCase):
-    ## Finally, compare the total forces on the sphere to some of Ashkin's results
-    #def test_force_uniform(self):
-        #f = 1e-3
+class TestIntegration(unittest.TestCase):
+    # Finally, compare the total forces on the sphere to some of Ashkin's results
+    def test_force_uniform(self):
+        f = 1e-3
         
-        ## A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
-        #Rl = f * np.tan(np.arcsin(1.25/1.33))
+        # A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
+        Rl = f * np.tan(np.arcsin(1.25/1.33))
         
-        ## A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
-        #rp = 5e-6
+        # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
+        rp = 5e-6
         
-        ## And the polarization is linear
-        #p = np.array([1,0,0])
+        # And the polarization is linear
+        p = np.array([1,0,0])
         
-        #opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
+        opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
         
-        ## Data from Ashkin, 1992
-        #data = np.array([
-            #[1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
-            #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
-            ##[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
-            #[1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
-            #[1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
-            #])
+        # Data from Ashkin, 1992
+        data = np.array([
+            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
+            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
+            #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
+            [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
+            [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
+            ])
         
-        #def check(row):
-            #n = row[0]
-            #pos = row[1:4]
-            #targetQ = row[4]
+        def check(row):
+            n = row[0]
+            pos = row[1:4]
+            targetQ = row[4]
             
-            ## Force index to check
-            #i = row[5]
+            # Force index to check
+            i = row[5]
             
-            #opt.set_particle_center(pos)
-            #opt.set_particle_index(n)
+            opt.set_particle_center(pos)
+            opt.set_particle_index(n)
             
-            #force = opt.integrate()
+            force = opt.integrate(3, 3)
             
-            #return np.abs(force[int(i)] - targetQ)
+            return np.abs(force[int(i)] - targetQ)
             
-        #res = np.apply_along_axis(check, axis=1, arr=data)
-        #self.assertLess(np.max(res), 0.01)
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        self.assertLess(np.max(res), 0.01)
