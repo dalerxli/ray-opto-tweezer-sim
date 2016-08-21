@@ -90,7 +90,7 @@ class OpticalSystem(object):
         
         lgg.debug(D)
         
-        # Otherwise, calculate the distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
+        # The distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
         d = -ln_dot_oc + sqrtD
         lgg.debug(d)
         
@@ -146,7 +146,6 @@ class OpticalSystem(object):
         # Transmission and reflection coefficients
         # Let's calculate the projection of the polarization vector on the incidence plane and the magnitude of that projection
         Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)#/(npl.norm(p, axis=1).reshape(-1,1)**2)
-        print(Pp.shape)
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
         Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
@@ -157,15 +156,20 @@ class OpticalSystem(object):
         
         # And finally, the scattering force magnitude:
         Fs = 1 + R*np.cos(2*th) - (T**2 * (np.cos(2*th-2*r) + R*np.cos(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+        Fs = Fs.reshape(-1,1)
         
         # And the gradient force magnitude:
         Fg = R*np.sin(2*th) - (T**2 * (np.sin(2*th-2*r) + R*np.sin(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+        Fg = Fg.reshape(-1,1)
         
         # And calculate the total force:
         # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
         #print(T.shape)
         #print(Fs.shape)
-        F = Fs.reshape(-1,1)*dir_scat - Fg.reshape(-1,1)*dir_grad
+        F = Fs*dir_scat - Fg*dir_grad
+        
+        # All the non-intersection forces will now be null
+        F[np.isnan(F)] = 0
         
         return F
     
@@ -220,8 +224,10 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         dr = self._Rl/(rsteps-1)
         dth = 2*np.pi/(thsteps-1)
         
-        Ft = dr*dth*np.sum(self._total_ray_force(rs, ths), axis=1)
-        
+        forces = self._total_ray_force(rs, ths)
+        print(forces.shape)
+        Ft = dr*dth*np.sum(forces, axis=0)
+        print(Ft.shape)
         #for i in range(0,3):
             #Ft[i] = si.dblquad(lambda r,th: self._total_ray_force(r, th)[i], 0, 2*np.pi, lambda x: 0, lambda x: self._Rl, epsabs=1e-4, epsrel=1e-4)[0]
         
