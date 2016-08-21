@@ -8,6 +8,8 @@ import logging
 logging.basicConfig(level=logging.INFO)
 lgg = logging.getLogger("intersection_module")
 
+import line_profiler
+
 # Calculates the dot product of rows of two matrices
 def dot_rows(a, b):
     return np.einsum('ij,ij->i', a, np.conj(b))
@@ -134,10 +136,7 @@ class OpticalSystem(object):
         # Now remove the undefined values (division by zero)
         dir_grad[np.isnan(dir_grad)] = 0
             
-        #print(dir_grad)
-            
         # The magnitudes of the forces are specified in Ashkin, 1992. First let's calculate some auxiliary quantities:
-        
         # Refraction angles:
         r = self._snell(th)
         
@@ -157,17 +156,24 @@ class OpticalSystem(object):
         T, R = self._fresnel(th, r, Pp)
         
         # And finally, the scattering force magnitude:
-        Fs = 1 + R*np.cos(2*th) - (T**2 * (np.cos(2*th-2*r) + R*np.cos(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+        # First, some auxiliary arrays (to not compute them twice):
+        th2 = 2*th
+        r2 = 2*r
+        Rsin2th = R*np.sin(th2)
+        Rcos2th = R*np.cos(th2)
+        denominator = (1 + R**2 + 2*R*np.cos(r2))
+        th2_r2 = th2-r2
+        Tsq = T**2
+
+        Fs = 1 + Rcos2th - (Tsq * (np.cos(th2_r2) + Rcos2th)) / denominator
         Fs = Fs.reshape(-1,1)
         
         # And the gradient force magnitude:
-        Fg = R*np.sin(2*th) - (T**2 * (np.sin(2*th-2*r) + R*np.sin(2*th))) / (1 + R**2 + 2*R*np.cos(2*r))
+        Fg = Rsin2th - (Tsq * (np.sin(th2_r2) + Rsin2th)) / denominator
         Fg = Fg.reshape(-1,1)
         
         # And calculate the total force:
         # Note that the sign of Fg is due to a sign error (or maybe misunderstanding?) in Ashkin, 1992
-        #print(T.shape)
-        #print(Fs.shape)
         F = Fs*dir_scat - Fg*dir_grad
         
         # All the non-intersection forces will now be null
