@@ -13,6 +13,9 @@ import numpy.linalg as npl
 # For integration
 import scipy.integrate as si 
 
+# For timing
+import datetime as dt
+
 class OpticalSystemIntersectionTestCase(unittest.TestCase):
     def test_intersect_normal(self):
         opt = osys.OpticalSystem(np.array([0,0,0]), 1, 1.5)
@@ -316,9 +319,12 @@ class TestIntegration(unittest.TestCase):
             opt.set_particle_center(pos)
             opt.set_particle_index(n)
             
-            force = opt.integrate(400, 400)
+            force = opt.integrate(200, 200)
             
             return np.abs(force[int(i)] - targetQ)
             
+        t0 = dt.datetime.now()
         res = np.apply_along_axis(check, axis=1, arr=data)
+        t1 = dt.datetime.now()
+        print(t1-t0)
         self.assertLess(np.max(res), 0.02)
