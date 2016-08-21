@@ -69,7 +69,8 @@ class OpticalSystem(object):
     
     def _intersection_angle(self):
         # Make l (director of the line) unitary
-        ln = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
+        self._l = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
+        ln = self._l
         
         # Note: self._o and self_c should be (N x 3) matrices with N the number of rays considered
         oc = self._o - self._c
@@ -113,7 +114,7 @@ class OpticalSystem(object):
         c_angles[(c_angles > 1) & (c_angles < 1+1e-8)] = 1
         
         # And finally, return the angle (absolute value)
-        return np.arccos(np.abs(c_angles))
+        return np.arccos(c_angles)
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
@@ -122,8 +123,8 @@ class OpticalSystem(object):
         th = self._intersection_angle()
         
         ## First we have to determine the coordinate system for the gradient and scattering forces:
-        # The scattering force direction, according to Ashkin, 1992, is along the ray propagation direction:
-        dir_scat = self._l/npl.norm(self._l, axis=1).reshape(-1,1)
+        # The scattering force direction, according to Ashkin, 1992, is along the ray propagation direction. Since we have normalized it before in intersection_angle, we don't have to do it again
+        dir_scat = self._l
         
         # The gradient force direction (Ashkin, 1992) is orthogonal to the ray propagation direction and lies in the plane formed by the ray and the center of the sphere. For that, we first make a vector that points from the center of the sphere to one of the points in the line and Gram-Schmidt orthogonalize it to make a vector perpendicular to the scattering
         a = self._o - self._c
