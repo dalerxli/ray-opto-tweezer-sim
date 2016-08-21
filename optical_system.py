@@ -129,8 +129,12 @@ class OpticalSystem(object):
         dir_grad = a - dot_rows(a, dir_scat).reshape(-1,1)*dir_scat
         
         # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence. Otherwise, we have to normalize dir_grad
-        if not np.all(dir_grad == np.array([0,0,0])):
-            dir_grad = dir_grad / npl.norm(dir_grad, axis=1).reshape(-1,1)
+        dir_grad = dir_grad / npl.norm(dir_grad, axis=1).reshape(-1,1)
+        
+        # Now remove the undefined values (division by zero)
+        dir_grad[np.isnan(dir_grad)] = 0
+            
+        #print(dir_grad)
             
         # The magnitudes of the forces are specified in Ashkin, 1992. First let's calculate some auxiliary quantities:
         

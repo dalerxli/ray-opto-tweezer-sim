@@ -292,15 +292,15 @@ class TestIntegration(unittest.TestCase):
         rp = 5e-6
         
         # And the polarization is linear
-        p = np.array([1,1j,0])
+        p = np.array([1,0,0])
         
         opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
         
         # Data from Ashkin, 1992
         data = np.array([
-            #[1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
-            #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
-            #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
+            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
+            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
+            [1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
             [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
             [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
             ])
@@ -321,4 +321,4 @@ class TestIntegration(unittest.TestCase):
             return np.abs(force[int(i)] - targetQ)
             
         res = np.apply_along_axis(check, axis=1, arr=data)
-        self.assertLess(np.max(res), 0.01)
+        self.assertLess(np.max(res), 0.02)
