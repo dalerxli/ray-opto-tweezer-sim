@@ -207,8 +207,8 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         
         forces = opt._ray_force(p)
         
-        # There should be a force towards +x
-        self.assertGreater(forces[0,0], 0)
+        # There should be a force towards +x. Moreover, it should more than 0.04 (reflectivity)
+        self.assertGreater(forces[0,0], 0.04)
         
         # And the forces in the other directions should be zero
         self.assertTrue(np.allclose(forces[0,1:], 0))
@@ -251,7 +251,7 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         opt._c = np.array([c])
         
         # And this is the polarization of the ray in Jones notation (circular)
-        p = np.array([[1,1j,0]])/np.sqrt(2)
+        p = np.array([[1,1j,0]])
         
         data = np.array([
             [1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
@@ -292,17 +292,17 @@ class TestIntegration(unittest.TestCase):
         rp = 5e-6
         
         # And the polarization is linear
-        p = np.array([1,0,0])
+        p = np.array([1,1j,0])
         
         opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
         
         # Data from Ashkin, 1992
         data = np.array([
-            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
+            #[1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
             #[1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
             #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0],
-            #[1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
-            #[1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
+            [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
+            [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
             ])
         
         def check(row):

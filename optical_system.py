@@ -128,9 +128,9 @@ class OpticalSystem(object):
         
         dir_grad = a - dot_rows(a, dir_scat).reshape(-1,1)*dir_scat
         
-        # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence:
-        #if not np.all(dir_grad == np.array([0,0,0])):
-            #dir_grad = dir_grad / npl.norm(dir_grad)
+        # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence. Otherwise, we have to normalize dir_grad
+        if not np.all(dir_grad == np.array([0,0,0])):
+            dir_grad = dir_grad / npl.norm(dir_grad, axis=1).reshape(-1,1)
             
         # The magnitudes of the forces are specified in Ashkin, 1992. First let's calculate some auxiliary quantities:
         
@@ -143,7 +143,7 @@ class OpticalSystem(object):
         pn = dot_rows(p, p)
         
         # Then, use it to calculate the projection of the polarization on the incidence plane
-        Pp = np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2/pn
+        Pp = (np.abs(dot_rows(p, dir_grad))**2 + np.abs(dot_rows(p, dir_scat))**2)/pn
         
         # Sometimes, the proportion will be slightly bigger than 1 because of floating-point errors. The following corrects it:
         Pp[(Pp > 1) & (Pp < 1+1e-7)] = 1
