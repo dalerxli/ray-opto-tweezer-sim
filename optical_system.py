@@ -3,11 +3,6 @@ import numpy.linalg as npl
 
 import scipy.integrate as si
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
-lgg = logging.getLogger("intersection_module")
-
 import line_profiler
 
 # Calculates the dot product of rows of two matrices
@@ -91,24 +86,17 @@ class OpticalSystem(object):
         # For convenience, calculate the square root of the determinants, as this will be used later a couple of times
         sqrtD = np.sqrt(D)
         
-        lgg.debug(D)
-        
         # The distance along the line where an intersection occurs (doesn't matter which since this is a sphere)
         d = -ln_dot_oc + sqrtD
-        lgg.debug(d)
         
         # The points at which the intersections occur is x:
         x = self._o + d.reshape(-1,1)*ln
-            
-        lgg.debug(x)
         
         # The vector that points from the center of the sphere to the intersection is r:
         r = x - self._c
-        lgg.debug(r)
         
         # To find the angle of intersecting ray with the normal to the surface, first find the cosine of that angle (absolute value of it)
         c_angles = np.abs(dot_rows(ln, r)/self._Rp)
-        lgg.debug(c_angles)
         
         # Sometimes due to floating-point errors, the value will be slightly higher than 1. The following corrects it:
         c_angles[(c_angles > 1) & (c_angles < 1+1e-8)] = 1
