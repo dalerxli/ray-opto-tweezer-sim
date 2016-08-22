@@ -1,5 +1,6 @@
 import numpy as np
 import numpy.linalg as npl
+import numexpr as ne
 
 import scipy.integrate as si
 
@@ -56,8 +57,14 @@ class OpticalSystem(object):
         costh = np.cos(th)
         cosr = np.cos(r)
         
-        Rs = ((costh - nr*cosr)/(costh + nr*cosr))**2
-        Rp = ((cosr - nr*costh)/(cosr + nr*costh))**2
+        #Rs = ((costh - nr*cosr)/(costh + nr*cosr))**2
+        #Rp = ((cosr - nr*costh)/(cosr + nr*costh))**2
+        
+        #Rs = ne.evaluate("((cos(th) - nr*cos(r))/(cos(th) + nr*cos(r)))**2")
+        #Rp = ne.evaluate("((cos(r) - nr*cos(th))/(cos(r) + nr*cos(th)))**2")
+        
+        Rs = ne.evaluate("((costh - nr*cosr)/(costh + nr*cosr))**2")
+        Rp = ne.evaluate("((cosr - nr*costh)/(cosr + nr*costh))**2")
         
         # Calculate the final reflectivity and transmittivity
         R = Rs*(1-Pp) + Rp*Pp
@@ -110,6 +117,7 @@ class OpticalSystem(object):
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
+    @profile
     def _ray_force(self, p):
         # Calculate the incidence angle first. NaN values will be passed because they will be filtered later
         th = self._intersection_angle()
