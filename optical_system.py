@@ -230,7 +230,9 @@ class OpticalSystemSimple(OpticalSystem):
     # Integrates all the rays, dividing the lens radius by rsteps and the polar angle (2pi) into thsteps
     def integrate(self, rsteps, thsteps):
         rrange = np.linspace(0, self._Rl, rsteps)
-        thrange = np.linspace(0, 2*np.pi, thsteps)
+        
+        # The endpoint is excluded since we are on a ring (0 to 2pi)
+        thrange = np.linspace(0, 2*np.pi, thsteps, endpoint=False)
         
         # Create the values on which the function will be evaluated
         rs,ths = np.meshgrid(rrange, thrange)
