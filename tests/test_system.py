@@ -346,9 +346,12 @@ class TestIntegration(unittest.TestCase):
         data = np.array([
             [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2, 1e6*Rl], # Limit of uniformly-filled objective (consistency check)
             [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1, 1e6*Rl], # Limit of uniformly-filled objective (consistency check)
+            
             [1.2, 0.00, 0.00, 1.01*rp, -0.259, 2, 1.7*Rl],
             [1.2, 0.00, 0.98*rp, 0.00, -0.326, 1, 1.7*Rl],
-            [1.2, 0.00, 0.98*rp, 0.00, -0.349, 1, 1.0*Rl]
+            
+            [1.2, 0.00, 0.98*rp, 0.00, -0.349, 1, 1.0*Rl],
+            [1.2, 0.00, 0.00, 1.02*rp, -0.225, 2, 1.0*Rl]
             ])
         
         def check(row):
