@@ -24,6 +24,9 @@ class OpticalSystem(object):
         self._o = np.array([0, 0, 0])
         self._l = np.array([0, 0, 0])
         
+        # Flag to indicate that the ray directions and origins are up-to-date with the current system configuration (to avoid calculating them multiple times)
+        self._rays_updated = False
+        
     def set_particle_radius(self, Rp):
         # Make sure that the sphere radius is not zero or negative
         if Rp <= 0:
@@ -67,8 +70,9 @@ class OpticalSystem(object):
         return (T, R)
     
     def _intersection_angle(self):
-        # Make l (director of the line) unitary
-        self._l = normalize(self._l)
+        # Make l (director of the line) unitary (in case this has not been done before, mostly useful for testing)
+        if not self._rays_updated:
+            self._l = normalize(self._l) 
         ln = self._l
         
         # Note: self._o and self_c should be (N x 3) matrices with N the number of rays considered
@@ -209,11 +213,17 @@ class OpticalSystemSimple(OpticalSystem):
         self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
         self._l = np.tile(np.array([0, 0, self._f]), (n_rays, 1)) - self._o
         
+        # Normalize the rays's directions
+        self._l = normalize(self._l)      
+        
+        # Let know that the rays have been updated 
+        self._rays_updated = True        
+        
         return
     
     # Calculate forces for each and every ray. To be inherited and implemented in children classes
     def _total_ray_force(self, rs, ths):
-        pass
+        _gen_ray_directions(rs, ths)
     
     # Integrates all the rays, dividing the lens radius by rsteps and the polar angle (2pi) into thsteps
     def integrate(self, rsteps, thsteps):
@@ -276,7 +286,7 @@ class OpticalSystemSimpleGaussian(OpticalSystemSimple):
         
         # And the intensity function is
         def I(r):
-            return I_0 * np.exp(-2 * (r/self.omega)**2)
+            return I_0 * np.exp(-2 * (r/self._omega)**2)
     
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
         return (r*I(r)).reshape(-1,1)*F

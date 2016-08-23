@@ -18,29 +18,29 @@ import datetime as dt
 
 class OpticalSystemIntersectionTestCase(unittest.TestCase):
     def test_intersect_normal(self):
-        opt = osys.OpticalSystem(np.array([0,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([0,0,0.0]), 1.0, 1.5)
         
-        opt._o = np.array([[0,0,0]])
-        opt._l = np.array([[1,0,0]])
+        opt._o = np.array([[0.0,0,0]])
+        opt._l = np.array([[1.0,0,0]])
         
         angle = opt._intersection_angle()
         
         self.assertAlmostEqual(angle[0], 0)
         
     def test_intersect_normal_offset(self):
-        opt = osys.OpticalSystem(np.array([3,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([3.0,0,0]), 1.0, 1.5)
         
-        opt._o = np.array([[3,0,0]])
-        opt._l = np.array([[1,0,0]])
+        opt._o = np.array([[3.0,0,0]])
+        opt._l = np.array([[1.0,0,0]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], 0)
     
     def test_intersect_normal_inv_director(self):
-        opt = osys.OpticalSystem(np.array([3,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([3.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[3,0,0]])
-        opt._l = np.array([[1,0,0]])
+        opt._o = np.array([[3.0,0,0]])
+        opt._l = np.array([[1.0,0,0]])
         
         opt._l = -6 * opt._l
         
@@ -50,50 +50,50 @@ class OpticalSystemIntersectionTestCase(unittest.TestCase):
         self.assertAlmostEqual(angle[0], 0)
         
     def test_intersect_normal_angle_director(self):
-        opt = osys.OpticalSystem(np.array([3,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([3.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[3,0,0]])
-        opt._l = np.array([[1,1,1]])
+        opt._o = np.array([[3.0,0,0]])
+        opt._l = np.array([[1.0,1,1]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], 0)
         
     def test_intersect_normal_angle_director_external(self):
         # And now let the line hit the sphere normally, but at an angle to an axis
-        opt = osys.OpticalSystem(np.array([5,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([5.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[0,0,5]])
-        opt._l = np.array([[1,0,-1]])
+        opt._o = np.array([[0,0,5.0]])
+        opt._l = np.array([[1.0,0,-1]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], 0, places=5)
         
     def test_intersect_normal_at_zero(self):
         # What happens if the position of the intersection is (0,0,0)?
-        opt = osys.OpticalSystem(np.array([1,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([1.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[1,0,0]])
-        opt._l = np.array([[-1,1,1]])
+        opt._o = np.array([[1.0,0,0]])
+        opt._l = np.array([[-1.0,1,1]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], 0)
         
     def test_intersect_tangent(self):
         # What happens if the ray is exactly tangent to the sphere?
-        opt = osys.OpticalSystem(np.array([3,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([3.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[4,0,10]])
-        opt._l = np.array([[0,0,-1]])
+        opt._o = np.array([[4.0,0,10]])
+        opt._l = np.array([[0,0,-1.0]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], np.pi/2)
         
     def test_intersect_45(self):
         # Here, the ray should intersect the sphere at 45 degrees
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, 1.5)
         
-        opt._o = np.array([[0,0,-3]])
-        opt._l = np.array([[1,0,1]])
+        opt._o = np.array([[0,0,-3.0]])
+        opt._l = np.array([[1,0,1.0]])
         
         angle = opt._intersection_angle()
         self.assertAlmostEqual(angle[0], np.pi/4)
@@ -102,13 +102,13 @@ class OpticalSystemIntersectionTestCase(unittest.TestCase):
         ## The system should not accept zero or negative sphere radiuses
         for R in [-1, 0]:
             with self.assertRaises(ValueError):
-                opt = osys.OpticalSystem(np.array([4,0,0]), R, 1.5)
+                opt = osys.OpticalSystem(np.array([4.0,0,0]), R, 1.5)
                 
 ## Testing the helper functions to calculate the angle of refraction and the coefficients of transmission/reflection
 class SystemRefractionTestCase(unittest.TestCase):
     def test_snell_normal(self):
         # At normal incidence, the angle stays zero:
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, 1.5)
         r = opt._snell(np.array([0]))
         
         self.assertAlmostEqual(r[0], 0)
@@ -116,14 +116,14 @@ class SystemRefractionTestCase(unittest.TestCase):
     def test_snell_tangent(self):
         # At tangent incidence, the refr. angle should be critical:
         nr = 1.5
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, nr)
         r = opt._snell(np.array([np.pi/2]))
         
         self.assertAlmostEqual(np.sin(r)[0], 1/nr)
         
     def test_snell_homogeneous(self):
         # If the relative index is 1, then there should be no change of propagation at all
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, 1)
         
         th = np.array([0, np.pi/3, np.pi/4, np.pi/5])
         
@@ -142,7 +142,7 @@ class SystemRefractionTestCase(unittest.TestCase):
         r = np.zeros(testlen)
         Pp = np.linspace(0, 1, testlen)
         
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, nr)
         
         T, R = opt._fresnel(th, r, Pp)
             
@@ -160,7 +160,7 @@ class SystemRefractionTestCase(unittest.TestCase):
         r = np.zeros(testlen)
         Pp = np.linspace(0, 1, testlen)
         
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, nr)
         
         r = opt._snell(th)
         
@@ -180,7 +180,7 @@ class SystemRefractionTestCase(unittest.TestCase):
         r = np.zeros(testlen)
         Pp = np.ones(testlen)
         
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, nr)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, nr)
         
         r = opt._snell(th)
         
@@ -192,16 +192,16 @@ class SystemRefractionTestCase(unittest.TestCase):
 class SphereIntersectionForceTestCase(unittest.TestCase):
     def test_force_normal(self):
         # The ray is normally incident on the sphere
-        c = np.array([5,0,0])
+        c = np.array([5.0,0,0])
         R = 1
-        o = np.array([[0,0,0]])
-        l = np.array([[1,0,0]])
+        o = np.array([[0.0,0,0]])
+        l = np.array([[1.0,0,0]])
         
         # This is the relative refractive index of the sphere
         nr = 1.5
         
         # And this is the polarization of the ray in Jones notation
-        p = np.array([[1,0,0]])
+        p = np.array([[1.0,0,0]])
         
         opt = osys.OpticalSystem(c, R, nr)
         opt._c = np.array([c])
@@ -218,16 +218,16 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
     
     def test_force_sign(self):
         # The ray is a bit displaced to the top
-        c = np.array([5,0,0])
+        c = np.array([5.0,0,0])
         R = 1
         o = np.array([[0,0,0.1]])
-        l = np.array([[1,0,0]])
+        l = np.array([[1.0,0,0]])
         
         # This is the relative refractive index of the sphere
         nr = 1.5
         
         # And this is the polarization of the ray in Jones notation
-        p = np.array([[1,0,0]])
+        p = np.array([[1.0,0,0]])
         
         opt = osys.OpticalSystem(c, R, nr)
         opt._c = np.array([c])
@@ -246,15 +246,15 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         # Test the maximum gradient forces published in Ashkin, 1992
         
         # The origin of the ray will be on the sphere for simpler calculations:
-        c = np.array([1,0,0])
+        c = np.array([1.0,0,0])
         R = 1
-        o = np.array([[0,0,0]])
+        o = np.array([[0.0,0,0]])
         
-        opt = osys.OpticalSystem(np.array([4,0,0]), 1, 1.5)
+        opt = osys.OpticalSystem(np.array([4.0,0,0]), 1, 1.5)
         opt._c = np.array([c])
         
         # And this is the polarization of the ray in Jones notation (circular)
-        p = np.array([[1,1j,0]])
+        p = np.array([[1.0,1j,0]])
         
         data = np.array([
             [1.1, np.sqrt(0.429**2 + 0.262**2), 79*np.pi/180],
@@ -295,7 +295,7 @@ class TestIntegration(unittest.TestCase):
         rp = 5e-6
         
         # And the polarization is linear
-        p = np.array([1,0,0])
+        p = np.array([1.0,0,0])
         
         opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
         
@@ -362,7 +362,7 @@ class TestIntegration(unittest.TestCase):
             # The Gaussian beam waist (~infinity for uniform filling)
             a = row[6]
             
-            opt = osys.OpticalSystemSimpleUniform(pos, rp, n, Rl, f, p)
+            opt = osys.OpticalSystemSimpleGaussian(pos, rp, n, Rl, f, p, a)
             force = opt.integrate(200, 200)
             
             return np.abs(force[int(i)] - targetQ)
@@ -371,4 +371,4 @@ class TestIntegration(unittest.TestCase):
         res = np.apply_along_axis(check, axis=1, arr=data)
         t1 = dt.datetime.now()
         print(t1-t0)
-        self.assertLess(np.max(res), 0.03)
+        self.assertLess(np.max(res), 0.01)
