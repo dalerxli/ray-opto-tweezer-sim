@@ -34,7 +34,7 @@ xs = np.linspace(0, 0, 1)
 ys = np.linspace(0, 0, 1)
 
 # Same as above, for z
-zs = np.linspace(-2, 2, 10)
+zs = np.linspace(-2, 2, 100)
 
 # Now we generate the space of all the necessary coordinates, where every row is a position to be calculated
 xx, yy, zz = np.meshgrid(xs, ys, zs)
@@ -52,4 +52,8 @@ def force(row):
     return force
 
 forces = np.apply_along_axis(force, axis=1, arr=positions)
-print(forces)
+
+# Make an array that includes positions and forces
+out_array = np.hstack([positions, forces])
+# Save it into a file
+np.savetxt(out_file, out_array, delimiter="\t", fmt='%.6e')
