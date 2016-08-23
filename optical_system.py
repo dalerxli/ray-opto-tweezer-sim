@@ -193,12 +193,14 @@ class OpticalSystemSimple(OpticalSystem):
     def set_focal_distance(self, f):
         if f > 0:
             self._f = f
+            self._rays_updated = False
         else:
             raise ValueError("Invalid focal distance: {0}".format(f))
         
     def set_lens_radius(self, Rl):
         if Rl > 0:
             self._Rl = Rl
+            self._rays_updated = False
         else:
             raise ValueError("Invalid lens radius: {0}".format(Rl))
         
