@@ -173,8 +173,9 @@ class OpticalSystem(object):
         F[np.isnan(F)] = 0
         
         return F
-    
-class OpticalSystemSimpleUniform(OpticalSystem):
+  
+# An optical system where all the rays are focused into a single spot (most common arrangement)  
+class OpticalSystemSimple(OpticalSystem):
     def __init__(self, c, Rp, nr, Rl, f, p):
         super().__init__(c, Rp, nr)
         
@@ -201,20 +202,20 @@ class OpticalSystemSimpleUniform(OpticalSystem):
     def set_particle_center(self, c):
         self._c = np.array([np.array([0, 0, self._f]) + c])
         
-    # Returns the total force by single rays (multiplied by r for polar integration)
-    def _total_ray_force(self, r, th):
+    # Generates the ray directions and origins for a list of r's and th's on the lens (assuming that all the rays are focused in the focal spot)
+    def _gen_ray_directions(self, r, th):
         n_rays = len(r)
         
         self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
         self._l = np.tile(np.array([0, 0, self._f]), (n_rays, 1)) - self._o
         
-        # Make the polarization vectors have the correct dimension
-        self._p = np.tile(self._p_single, (n_rays, 1))
-        
-        F = self._ray_force(self._p)
+        return
     
-        return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
+    # Calculate forces for each and every ray. To be inherited and implemented in children classes
+    def _total_ray_force(self, rs, ths):
+        pass
     
+    # Integrates all the rays, dividing the lens radius by rsteps and the polar angle (2pi) into thsteps
     def integrate(self, rsteps, thsteps):
         rrange = np.linspace(0, self._Rl, rsteps)
         thrange = np.linspace(0, 2*np.pi, thsteps)
@@ -231,3 +232,21 @@ class OpticalSystemSimpleUniform(OpticalSystem):
         Ft = dr*dth*np.sum(forces, axis=0)
         
         return Ft
+
+# A simple system where the intensity on the lens is constant and all the rays are focussed into a single spot
+class OpticalSystemSimpleUniform(OpticalSystemSimple):
+    def __init__(self, c, Rp, nr, Rl, f, p):
+        super().__init__(c, Rp, nr, Rl, f, p)
+                
+    # Returns the total force by single rays (multiplied by r for polar integration)
+    def _total_ray_force(self, r, th):
+        n_rays = len(r)
+        super()._gen_ray_directions(r, th)
+        
+        # Make the polarization vectors have the correct dimension
+        self._p = np.tile(self._p_single, (n_rays, 1))
+        
+        F = self._ray_force(self._p)
+    
+        # The constant factor is to have unit power
+        return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
