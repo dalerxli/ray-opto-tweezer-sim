@@ -250,3 +250,33 @@ class OpticalSystemSimpleUniform(OpticalSystemSimple):
     
         # The constant factor is to have unit power
         return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
+    
+# A simple system where the intensity on the lens is constant and all the rays are focussed into a single spot
+class OpticalSystemSimpleGaussian(OpticalSystemSimple):
+    # omega is the beam size of the input Gaussian beam (assuming it has its waist on the lens)
+    def __init__(self, c, Rp, nr, Rl, f, p, omega):
+        self._omega = omega
+        super().__init__(c, Rp, nr, Rl, f, p)
+                
+    # Returns the total force by single rays (multiplied by r for polar integration)
+    def _total_ray_force(self, r, th):
+        n_rays = len(r)
+        super()._gen_ray_directions(r, th)
+        
+        # Make the polarization vectors have the correct dimension
+        self._p = np.tile(self._p_single, (n_rays, 1))
+        
+        F = self._ray_force(self._p)
+        
+        # Now we calculate the normalization:
+        # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
+        P_0 = 1/ (1 - np.exp(-2 * (self._Rl/self._omega)**2) )
+        # The peak intensity is then:
+        I_0 = 2*P_0/(np.pi* self._omega**2)
+        
+        # And the intensity function is
+        def I(r):
+            return I_0 * np.exp(-2 * (r/self.omega)**2)
+    
+        # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
+        return (r*I(r)).reshape(-1,1)*F
