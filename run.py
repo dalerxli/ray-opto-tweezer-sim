@@ -4,7 +4,7 @@ import optical_system as osys
 import numpy as np
 
 # Output file
-out_file = "results.tsv"
+out_file = "results-2d.tsv"
 
 # The radius of the particle will be taken as unity with no loss of generality.
 Rp = 1.0
@@ -28,7 +28,7 @@ p = np.array([1,0,0])
 # The first argument is the lowest x, the second is the highest x and the third is the number of steps to take.
 # If not iterating over x, then set it to 0, 0, 1 (or change 0 to the desired fixed value of x)
 # All the coordinates are zero when the particle is at the focus. Z decreases when the particle is closer to the lens.
-xs = np.linspace(0, 0, 1)
+xs = np.linspace(0, 2, 100)
 
 # Same as above, for y
 ys = np.linspace(0, 0, 1)
