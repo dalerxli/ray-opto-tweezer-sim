@@ -14,9 +14,12 @@ zz = values[:,2].flatten()
 ux = values[:,3].flatten()
 uz = values[:,5].flatten()
 
+# Add the counter-propagating beams
+
 # Add the negative x coordinates (for a symmetric plot)
 xx = np.hstack([xx, -xx])
 zz = np.hstack([zz, zz])
+
 ux = np.hstack([ux, -ux])
 uz = np.hstack([uz, uz])
 
@@ -40,19 +43,25 @@ xi = np.linspace(xx.min(), xx.max(), 100)
 
 ipts_z, ipts_x = np.meshgrid(zi, xi)
 
-ux_int = interpol.griddata((zz, xx), ux, (ipts_z, ipts_x), method='cubic')
-uz_int = interpol.griddata((zz, xx), uz, (ipts_z, ipts_x), method='cubic')
+ux_int = interpol.griddata((zz, xx), ux, (ipts_z, ipts_x), method='cubic').reshape(len(xi), len(zi))
+uz_int = interpol.griddata((zz, xx), uz, (ipts_z, ipts_x), method='cubic').reshape(len(xi), len(zi))
+
+# Enable counter-propagating setup
+uz_int = 0.5*(uz_int - uz_int[:,::-1])
 
 speed = np.sqrt(ux_int**2 + uz_int**2)
+lw = 5*speed/speed.max()
 
 plt.streamplot(ipts_z, ipts_x, uz_int, ux_int,          # data
                color=speed,         # array that determines the colour
                cmap=cm.cool,        # colour map
-               linewidth=2,         # line thickness
+               linewidth=lw,         # line thickness
                arrowstyle='->',     # arrow style
                arrowsize=1.5)       # arrow size
 
 #plt.colorbar()                      # add colour bar on the right
 
-plt.title('Stream Plot, Dynamic Colour')
+plt.title('Fuerzas en pinzas contrapropagantes')
+plt.xlabel("Z")
+plt.ylabel("X")
 plt.show()
