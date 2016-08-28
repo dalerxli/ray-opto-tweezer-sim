@@ -47,11 +47,12 @@ ux_int = interpol.griddata((zz, xx), ux, (ipts_z, ipts_x), method='cubic').resha
 uz_int = interpol.griddata((zz, xx), uz, (ipts_z, ipts_x), method='cubic').reshape(len(xi), len(zi))
 
 # Enable counter-propagating setup
-uz_int = 0.5*(uz_int - uz_int[:,::-1])
+#uz_int = 0.5*(uz_int - uz_int[:,::-1])
 
 speed = np.sqrt(ux_int**2 + uz_int**2)
 lw = 5*speed/speed.max()
 
+fig = plt.figure(figsize=(7*(4/3), 7))
 plt.streamplot(ipts_z, ipts_x, uz_int, ux_int,          # data
                color=speed,         # array that determines the colour
                cmap=cm.cool,        # colour map
@@ -61,7 +62,10 @@ plt.streamplot(ipts_z, ipts_x, uz_int, ux_int,          # data
 
 #plt.colorbar()                      # add colour bar on the right
 
-plt.title('Fuerzas en pinzas contrapropagantes')
+plt.title('Fuerzas en pinzas unipropagantes')
 plt.xlabel("Z")
 plt.ylabel("X")
+plt.xlim([zi.min(), zi.max()])
+plt.ylim([xi.min(), xi.max()])
+plt.savefig("2d-solo.png", bbox_inches="tight", transparent=True)
 plt.show()
