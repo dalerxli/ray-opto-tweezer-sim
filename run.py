@@ -46,7 +46,7 @@ xsteps = ranges.getfloat("xsteps")
 
 if xstart == xstop:
     xsteps = 1
-xs = np.linspace(xstart, xstart, xsteps)
+xs = np.linspace(xstart, xstop, xsteps)
 
 # Same as above, for y
 ystart = ranges.getfloat("ystart")
@@ -55,7 +55,7 @@ ysteps = ranges.getfloat("ysteps")
 
 if ystart == ystop:
     ysteps = 1
-ys = np.linspace(ystart, ystart, ysteps)
+ys = np.linspace(ystart, ystop, ysteps)
 
 # Same as above, for z
 zstart = ranges.getfloat("zstart")
@@ -64,7 +64,7 @@ zsteps = ranges.getfloat("zsteps")
 
 if zstart == zstop:
     zsteps = 1
-zs = np.linspace(zstart, zstart, zsteps)
+zs = np.linspace(zstart, zstop, zsteps)
 
 # Now we generate the space of all the necessary coordinates, where every row is a position to be calculated
 xx, yy, zz = np.meshgrid(xs, ys, zs)
