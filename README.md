@@ -27,3 +27,19 @@ The theoretical background for this code is described in Ashkin, 1992. Since I c
 - Multithreading support to speed things up on multi-core or multi-CPU machines.
 
 - Arbitrary ray-transfer function for the lens to allow simulating e.g. lenses with aberrations or lenses more interesting than the occasional Abbe-compliant objectives.
+
+## Installation
+
+### Universal way
+
+In order to use this program, Python 3, together with some additional packages (Scipy and NumExpr), is required. The easiest way to install it (Windows, Linux or Mac OS X) is to install the [Anaconda](https://www.continuum.io/downloads) Python distribution that already includes all the necessary packages. Just make sure to download the Python 3 version of Anaconda as opposed to Python 2.
+
+### Linux
+Alternatively, users of Linux can easily install Python 3 and the necessary packages by using their distribution's package system. In Ubuntu (at least in 14.04), for example, all the necessary packages can be easily installed with the console command:
+
+```
+sudo apt-get install python3-numexpr python3-scipy
+```
+
+This command will also install all the dependencies and, if it is not installed yet, Python3 itself. This approach has the advantage of a tight integration with the operating system and may not require to download as much data.
+
