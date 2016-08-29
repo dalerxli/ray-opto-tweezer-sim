@@ -45,8 +45,10 @@ class OpticalSystem(object):
     # theta can be a 1D numpy array. Then, the return value will be also be a numpy array (Snell's law applied to each element)
     def _snell(self, theta):
         # Raise exception if the angle is out of the [0,pi/2] range
-        if np.any((theta < 0) | (theta > np.pi/2)):
-            raise ValueError("Incidence angle out of range")
+        # Turn off "invalid value" errors as some of the values are deliberately NaNs
+        with np.errstate(invalid='ignore'):
+            if np.any((theta < 0) | (theta > np.pi/2)):
+                raise ValueError("Incidence angle out of range")
         
         return np.arcsin(1/self._nr * np.sin(theta))
     
@@ -108,10 +110,12 @@ class OpticalSystem(object):
         c_angles = np.abs(dot_rows(ln, r)/self._Rp)
         
         # Sometimes due to floating-point errors, the value will be slightly higher than 1. The following corrects it:
-        c_angles[(c_angles > 1) & (c_angles < 1+1e-8)] = 1
+        # We turn off the error reporting since some of the values are deliberately NaN
+        with np.errstate(invalid='ignore'):
+            c_angles[(c_angles > 1) & (c_angles < 1+1e-8)] = 1
         
-        # And finally, return the angle (absolute value)
-        return np.arccos(c_angles)
+            # And finally, return the angle (absolute value)
+            return np.arccos(c_angles)
     
     # This function calculates the normalized force (i.e. actual force multiplied by c/(n_1 P)) of a single ray described by a line whose origin is o and whose direction of propagation is l. The sphere of radius R has its center in c and has refractive index nr.
     # Important note: the polarization p is a Jones' vector specified in the lab's coordinate system (e.g. before entering the lens, so that it only has XY components). This vector can be complex. For example, for circular polarization this vector would be (1,i,0), while for linear polarization it is completely real. Its normalization is not important as it is normalized in the code.
@@ -129,7 +133,10 @@ class OpticalSystem(object):
         dir_grad = a - dot_rows(a, dir_scat).reshape(-1,1)*dir_scat
         
         # If the rays pass through the center of the sphere, then dir_grad will be = 0, but this is not a problem as this ray will not exert any gradient force. Then, we can take any direction as dir_grad without any consequence. Otherwise, we have to normalize dir_grad
-        dir_grad = normalize(dir_grad)# / npl.norm(dir_grad, axis=1).reshape(-1,1)
+        # Note that we just let the division-by-zero NaNs appear since its faster than detecting null rows first.
+        # For that, we turn off the division error reporting
+        with np.errstate(invalid='ignore'):
+            dir_grad = normalize(dir_grad)
         
         # Now remove the undefined values (division by zero)
         dir_grad[np.isnan(dir_grad)] = 0
