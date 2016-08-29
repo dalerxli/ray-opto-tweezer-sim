@@ -3,7 +3,8 @@ import numpy.linalg as npl
 
 import scipy.integrate as si
 
-import line_profiler
+# Used for profiling code
+#import line_profiler
 
 # Calculates the dot product of rows of two matrices
 def dot_rows(a, b):
