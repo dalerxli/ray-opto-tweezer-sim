@@ -284,52 +284,8 @@ class SphereIntersectionForceTestCase(unittest.TestCase):
         
 ## This class tests integration over all the rays coming out of a lens
 class TestIntegration(unittest.TestCase):
-    # Finally, compare the total forces on the sphere to some of Ashkin's results (for uniformly-filled objective)
-    def test_force_uniform(self):
-        f = 1e-3
-        
-        # A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
-        Rl = f * np.tan(np.arcsin(1.25/1.33))
-        
-        # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
-        rp = 5e-6
-        
-        # And the polarization is linear
-        p = np.array([1.0,0,0])
-        
-        opt = osys.OpticalSystemSimpleUniform(np.array([0,0,0]), rp, 1.5, Rl, f, p)
-        
-        # Data from Ashkin, 1992
-        data = np.array([
-            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2],
-            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1],
-            #[1.2, 1.05*rp, 0.00, 0.00, -0.490, 0], #This dataset is dubious: check Ashkin
-            [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2],
-            [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2]
-            ])
-        
-        def check(row):
-            n = row[0]
-            pos = row[1:4]
-            targetQ = row[4]
-            
-            # Force index to check
-            i = row[5]
-            
-            opt.set_particle_center(pos)
-            opt.set_particle_index(n)
-            
-            force = opt.integrate(200, 200)
-            
-            return np.abs(force[int(i)] - targetQ)
-            
-        t0 = dt.datetime.now()
-        res = np.apply_along_axis(check, axis=1, arr=data)
-        t1 = dt.datetime.now()
-        print(t1-t0)
-        self.assertLess(np.max(res), 0.02)
-        
-    # Finally, compare the total forces on the sphere to some of Ashkin's results (for uniformly-filled objective)
+    
+    # Finally, compare the total forces on the sphere to some of Ashkin's results (for Gaussian beam profiles and uniformly-filled objectives as a limit case)
     def test_force_gaussian(self):
         f = 1e-3
         
@@ -339,13 +295,15 @@ class TestIntegration(unittest.TestCase):
         # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
         rp = 5e-6
         
-        # And the polarization is linear
+        # And the polarization is circular
         p = np.array([1,1j,0])
         
         # Data from Ashkin, 1992
         data = np.array([
-            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2, 1e6*Rl], # Limit of uniformly-filled objective (consistency check)
-            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1, 1e6*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
             
             [1.2, 0.00, 0.00, 1.01*rp, -0.259, 2, 1.7*Rl],
             [1.2, 0.00, 0.98*rp, 0.00, -0.326, 1, 1.7*Rl],
@@ -374,4 +332,4 @@ class TestIntegration(unittest.TestCase):
         res = np.apply_along_axis(check, axis=1, arr=data)
         t1 = dt.datetime.now()
         print(t1-t0)
-        self.assertLess(np.max(res), 0.01)
+        self.assertLess(np.max(res), 0.012)

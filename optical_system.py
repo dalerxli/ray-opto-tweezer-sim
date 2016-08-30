@@ -254,24 +254,6 @@ class OpticalSystemSimple(OpticalSystem):
         Ft = dr*dth*np.sum(forces, axis=0)
         
         return Ft
-
-# A simple system where the intensity on the lens is constant and all the rays are focussed into a single spot
-class OpticalSystemSimpleUniform(OpticalSystemSimple):
-    def __init__(self, c, Rp, nr, Rl, f, p):
-        super().__init__(c, Rp, nr, Rl, f, p)
-                
-    # Returns the total force by single rays (multiplied by r for polar integration)
-    def _total_ray_force(self, r, th):
-        n_rays = len(r)
-        super()._gen_ray_directions(r, th)
-        
-        # Make the polarization vectors have the correct dimension
-        self._p = np.tile(self._p_single, (n_rays, 1))
-        
-        F = self._ray_force(self._p)
-    
-        # The constant factor is to have unit power
-        return (r/(np.pi * self._Rl**2)).reshape(-1,1)*F
     
 # A simple system where the intensity on the lens is constant and all the rays are focussed into a single spot
 class OpticalSystemSimpleGaussian(OpticalSystemSimple):
