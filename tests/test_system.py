@@ -361,7 +361,8 @@ class TestIntegration(unittest.TestCase):
             [1.2, 0.00, 0.00, 1.02*rp, -0.225, 2, 1.0*Rl]
             ])
         
-        def gaussian_intensity(r, th, Rl, **kwargs):
+        def gaussian_int_pol(r, th, Rl, **kwargs):
+            n_rays = len(r)
             # Now we calculate the normalization:
             # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
             P_0 = 1/ (1 - np.exp(-2 * (Rl/kwargs['a'])**2) )
@@ -369,10 +370,12 @@ class TestIntegration(unittest.TestCase):
             I_0 = 2*P_0/(np.pi* kwargs['a']**2)
             
             # And the intensity function is
-            def I(r):
-                return I_0 * np.exp(-2 * (r/kwargs['a'])**2)
+            I = I_0 * np.exp(-2 * (r/kwargs['a'])**2)
             
-            return I(r)
+            # The polarization is fixed
+            pol = np.tile(p, (n_rays, 1))
+            
+            return np.hstack([I.reshape(-1,1), pol])
         
         def check(row):
             n = row[0]
@@ -385,7 +388,7 @@ class TestIntegration(unittest.TestCase):
             # The Gaussian beam waist (~infinity for uniform filling)
             a = row[6]
             
-            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, p, gaussian_intensity, a=a)
+            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, gaussian_int_pol, a=a)
             force = opt.integrate(200, 200)
             
             return np.abs(force[int(i)] - targetQ)
@@ -422,13 +425,18 @@ class TestIntegration(unittest.TestCase):
             [1.2, 0.98*rp, 0.00, 0, -0.311, 0, 0.756*Rl],
             ])
         
-        def donut_intensity(r, th, Rl, **kwargs):
+        def donut_int_pol(r, th, Rl, **kwargs):
+            n_rays = len(r)
             a = kwargs['a']
             # Now we calculate the normalization:
             N = np.pi/4 * (a**2 - np.exp(-2 * (Rl/a)**2) * (2*Rl**2 + a**2))
             
             # And the intensity function is
-            return (r/a)**2 * np.exp(-2 * (r/a)**2) / N
+            I = (r/a)**2 * np.exp(-2 * (r/a)**2) / N
+            # And the polarization is
+            pol = np.tile(p, (n_rays, 1))
+            
+            return np.hstack([I.reshape(-1,1), pol])
         
         def check(row):
             n = row[0]
@@ -441,7 +449,7 @@ class TestIntegration(unittest.TestCase):
             # The Gaussian beam waist (~infinity for uniform filling)
             a = row[6]
             
-            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, p, donut_intensity, a=a)
+            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, donut_int_pol, a=a)
             force = opt.integrate(200, 200)
             
             return np.abs(force[int(i)] - targetQ)

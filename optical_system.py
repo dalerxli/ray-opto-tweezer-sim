@@ -289,9 +289,8 @@ class OpticalSystemSimpleGaussian(OpticalSystemSimple):
 class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
     # Ifun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters. Note that this function must be normalized, i.e. its integral over all the lens must be equal to 1. Otherwise, incorrect results for the force will be calculated.
     # pfun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters.
-    def __init__(self, c, Rp, nr, Rl, f, pfun, Ifun, **Ikw):
-        self._Ifun = Ifun
-        self._pfun = pfun
+    def __init__(self, c, Rp, nr, Rl, f, Ipfun, **Ikw):
+        self._Ipfun = Ipfun
         self._Ikw = Ikw
         
         # We set the polarization of the underlying class to an arbitrary vector since it's going to be recalculated after anyway
@@ -302,10 +301,12 @@ class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
         n_rays = len(r)
         super()._gen_ray_directions(r, th)
         
-        # Generate the polarization vectors for each ray
-        self._p = self._pfun(r, th, self._Rl, **self._Ikw)
+        # Generate the polarization vectors and intensity for each ray
+        int_pol = self._Ipfun(r, th, self._Rl, **self._Ikw)
+        self._p = int_pol[:,1:]
+        I = int_pol[:,0]
         
         F = self._ray_force(self._p)
     
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
-        return (r*self._Ifun(r, th, self._Rl, **self._Ikw)).reshape(-1,1)*F
+        return (r*I).reshape(-1,1)*F
