@@ -395,3 +395,51 @@ class TestIntegration(unittest.TestCase):
         t1 = dt.datetime.now()
         print(t1-t0)
         self.assertLess(np.max(res), 0.012)
+        
+    # Using the arbitrary-intensity case, calculate the forces for donut TEM*01 mode
+    def test_force_donut_arbitrary(self):
+        f = 1e-3
+        
+        # A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
+        Rl = f * np.tan(np.arcsin(1.25/1.33))
+        
+        # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
+        rp = 5e-6
+        
+        # And the polarization is circular
+        p = np.array([1,1j,0])
+        
+        # Data from Ashkin, 1992
+        data = np.array([
+            [1.2, 0.00, 0.00, 1.00*rp, -0.310, 2, 1.21*Rl],
+            ])
+        
+        def donut_intensity(r, th, Rl, **kwargs):
+            a = kwargs['a']
+            # Now we calculate the normalization:
+            N = np.pi/4 * (a**2 - np.exp(-2 * (Rl/a)**2) * (2*Rl**2 + a**2))
+            
+            # And the intensity function is
+            return (r/a)**2 * np.exp(-2 * (r/a)**2) / N
+        
+        def check(row):
+            n = row[0]
+            pos = row[1:4]
+            targetQ = row[4]
+            
+            # Force index to check
+            i = row[5]
+            
+            # The Gaussian beam waist (~infinity for uniform filling)
+            a = row[6]
+            
+            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, p, donut_intensity, a=a)
+            force = opt.integrate(200, 200)
+            
+            return np.abs(force[int(i)] - targetQ)
+            
+        t0 = dt.datetime.now()
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        t1 = dt.datetime.now()
+        print(t1-t0)
+        self.assertLess(np.max(res), 0.012)
