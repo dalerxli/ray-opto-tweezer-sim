@@ -255,7 +255,7 @@ class OpticalSystemSimple(OpticalSystem):
         
         return Ft
     
-# A simple system where the intensity on the lens is constant and all the rays are focussed into a single spot
+# A system where the intensity on the lens is Gaussian and all the rays are focused into a single spot
 class OpticalSystemSimpleGaussian(OpticalSystemSimple):
     # omega is the beam size of the input Gaussian beam (assuming it has its waist on the lens)
     def __init__(self, c, Rp, nr, Rl, f, p, omega):
@@ -284,3 +284,23 @@ class OpticalSystemSimpleGaussian(OpticalSystemSimple):
     
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
         return (r*I(r)).reshape(-1,1)*F
+    
+# A system where the intensity on the lens is arbitrary and all the rays are focused into a single spot
+class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
+    # Ifun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters. Note that this function must be normalized, i.e. its integral over all the lens must be equal to 1. Otherwise, incorrect results for the force will be calculated.
+    def __init__(self, c, Rp, nr, Rl, f, p, Ifun, **Ikw):
+        self._Ifun = Ifun
+        super().__init__(c, Rp, nr, Rl, f, p)
+                
+    # Returns the total force by single rays (multiplied by r for polar integration)
+    def _total_ray_force(self, r, th):
+        n_rays = len(r)
+        super()._gen_ray_directions(r, th)
+        
+        # Make the polarization vectors have the correct dimension
+        self._p = np.tile(self._p_single, (n_rays, 1))
+        
+        F = self._ray_force(self._p)
+    
+        # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
+        return (r*self._Ifun(r, th, self._Rl, **Ikw)).reshape(-1,1)*F
