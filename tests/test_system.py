@@ -374,6 +374,7 @@ class TestIntegration(unittest.TestCase):
             
             # The polarization is fixed
             pol = np.tile(p, (n_rays, 1))
+            #pol = np.array([np.cos(th), np.sin(th), np.zeros(r.shape)]).transpose()
             
             return np.hstack([I.reshape(-1,1), pol])
         
