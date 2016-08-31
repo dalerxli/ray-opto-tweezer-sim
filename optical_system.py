@@ -290,6 +290,7 @@ class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
     # Ifun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters. Note that this function must be normalized, i.e. its integral over all the lens must be equal to 1. Otherwise, incorrect results for the force will be calculated.
     def __init__(self, c, Rp, nr, Rl, f, p, Ifun, **Ikw):
         self._Ifun = Ifun
+        self._Ikw = Ikw
         super().__init__(c, Rp, nr, Rl, f, p)
                 
     # Returns the total force by single rays (multiplied by r for polar integration)
@@ -303,4 +304,4 @@ class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
         F = self._ray_force(self._p)
     
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
-        return (r*self._Ifun(r, th, self._Rl, **Ikw)).reshape(-1,1)*F
+        return (r*self._Ifun(r, th, self._Rl, **self._Ikw)).reshape(-1,1)*F

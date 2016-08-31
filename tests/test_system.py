@@ -333,3 +333,65 @@ class TestIntegration(unittest.TestCase):
         t1 = dt.datetime.now()
         print(t1-t0)
         self.assertLess(np.max(res), 0.012)
+        
+    # Finally, compare the total forces on the sphere to some of Ashkin's results (for Gaussian beam profiles and uniformly-filled objectives as a limit case), but using the class that allows arbitrary functions
+    def test_force_gaussian_arbitrary(self):
+        f = 1e-3
+        
+        # A microscope objective with NA = 1.25 (water-immersion). The half-angle of convergence is about 70 degrees
+        Rl = f * np.tan(np.arcsin(1.25/1.33))
+        
+        # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
+        rp = 5e-6
+        
+        # And the polarization is circular
+        p = np.array([1,1j,0])
+        
+        # Data from Ashkin, 1992
+        data = np.array([
+            [1.2, 0.00, 0.00, 1.01*rp, -0.276, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.2, 0.00, 0.98*rp, 0.00, -0.313, 1, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.4, 0.00, 0.00, 0.93*rp, -0.282, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            [1.8, 0.00, 0.00, 0.88*rp, -0.171, 2, 1e7*Rl], # Limit of uniformly-filled objective (consistency check)
+            
+            [1.2, 0.00, 0.00, 1.01*rp, -0.259, 2, 1.7*Rl],
+            [1.2, 0.00, 0.98*rp, 0.00, -0.326, 1, 1.7*Rl],
+            
+            [1.2, 0.00, 0.98*rp, 0.00, -0.349, 1, 1.0*Rl],
+            [1.2, 0.00, 0.00, 1.02*rp, -0.225, 2, 1.0*Rl]
+            ])
+        
+        def gaussian_intensity(r, th, Rl, **kwargs):
+            # Now we calculate the normalization:
+            # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
+            P_0 = 1/ (1 - np.exp(-2 * (Rl/kwargs['a'])**2) )
+            # The peak intensity is then:
+            I_0 = 2*P_0/(np.pi* kwargs['a']**2)
+            
+            # And the intensity function is
+            def I(r):
+                return I_0 * np.exp(-2 * (r/kwargs['a'])**2)
+            
+            return I(r)
+        
+        def check(row):
+            n = row[0]
+            pos = row[1:4]
+            targetQ = row[4]
+            
+            # Force index to check
+            i = row[5]
+            
+            # The Gaussian beam waist (~infinity for uniform filling)
+            a = row[6]
+            
+            opt = osys.OpticalSystemSimpleArbitrary(pos, rp, n, Rl, f, p, gaussian_intensity, a=a)
+            force = opt.integrate(200, 200)
+            
+            return np.abs(force[int(i)] - targetQ)
+            
+        t0 = dt.datetime.now()
+        res = np.apply_along_axis(check, axis=1, arr=data)
+        t1 = dt.datetime.now()
+        print(t1-t0)
+        self.assertLess(np.max(res), 0.012)
