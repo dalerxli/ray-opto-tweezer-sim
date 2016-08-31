@@ -406,12 +406,20 @@ class TestIntegration(unittest.TestCase):
         # A particle of rp=5e-6. Not necessary in this case, but I'll keep for consistency.
         rp = 5e-6
         
-        # And the polarization is circular
-        p = np.array([1,1j,0])
+        # And the polarization is linear
+        p = np.array([0,1,0])
         
         # Data from Ashkin, 1992
         data = np.array([
             [1.2, 0.00, 0.00, 1.00*rp, -0.310, 2, 1.21*Rl],
+            [1.2, 0.00, 0.00, 1.01*rp, -0.300, 2, 1.00*Rl],
+            [1.2, 0.00, 0.00, 1.01*rp, -0.296, 2, 0.938*Rl],
+            [1.2, 0.00, 0.00, 1.01*rp, -0.275, 2, 0.756*Rl],
+            
+            [1.2, 0.98*rp, 0.00, 0, -0.290, 0, 1.21*Rl],
+            [1.2, 0.98*rp, 0.00, 0, -0.296, 0, 1.00*Rl],
+            [1.2, 0.98*rp, 0.00, 0, -0.298, 0, 0.938*Rl],
+            [1.2, 0.98*rp, 0.00, 0, -0.311, 0, 0.756*Rl],
             ])
         
         def donut_intensity(r, th, Rl, **kwargs):
@@ -442,4 +450,4 @@ class TestIntegration(unittest.TestCase):
         res = np.apply_along_axis(check, axis=1, arr=data)
         t1 = dt.datetime.now()
         print(t1-t0)
-        self.assertLess(np.max(res), 0.012)
+        self.assertLess(np.max(res), 0.006)
