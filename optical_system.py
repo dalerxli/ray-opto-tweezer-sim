@@ -285,21 +285,25 @@ class OpticalSystemSimpleGaussian(OpticalSystemSimple):
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
         return (r*I(r)).reshape(-1,1)*F
     
-# A system where the intensity on the lens is arbitrary and all the rays are focused into a single spot
+# A system where the intensity on the lens and polarization (spatial) are arbitrary and all the rays are focused into a single spot
 class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
     # Ifun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters. Note that this function must be normalized, i.e. its integral over all the lens must be equal to 1. Otherwise, incorrect results for the force will be calculated.
-    def __init__(self, c, Rp, nr, Rl, f, p, Ifun, **Ikw):
+    # pfun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters.
+    def __init__(self, c, Rp, nr, Rl, f, pfun, Ifun, **Ikw):
         self._Ifun = Ifun
+        self._pfun = pfun
         self._Ikw = Ikw
-        super().__init__(c, Rp, nr, Rl, f, p)
+        
+        # We set the polarization of the underlying class to an arbitrary vector since it's going to be recalculated after anyway
+        super().__init__(c, Rp, nr, Rl, f, np.array([1,0,0]))
                 
     # Returns the total force by single rays (multiplied by r for polar integration)
     def _total_ray_force(self, r, th):
         n_rays = len(r)
         super()._gen_ray_directions(r, th)
         
-        # Make the polarization vectors have the correct dimension
-        self._p = np.tile(self._p_single, (n_rays, 1))
+        # Generate the polarization vectors for each ray
+        self._p = self._pfun(r, th, self._Rl, **self._Ikw)
         
         F = self._ray_force(self._p)
     
