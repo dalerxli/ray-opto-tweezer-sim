@@ -18,10 +18,10 @@ def gaussian_fixed(r, th, Rl, **kwargs):
     
     # First, we calculate the normalization:
     # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
-    P_0 = 1/ (1 - np.exp(-2 * (Rl/a**2) )
+    P_0 = 1/ (1 - np.exp(-2 * (Rl/a)**2) )
     
     # The peak intensity is then:
-    I_0 = 2*P_0/(np.pi * a**2)
+    I_0 = 2*P_0/(pi * a**2)
     
     # And the normalized intensity function is
     I = I_0 * np.exp(-2 * (r/a)**2)
@@ -41,10 +41,10 @@ def gaussian_radial(r, th, Rl, **kwargs):
     
     # First, we calculate the normalization:
     # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
-    P_0 = 1/ (1 - np.exp(-2 * (Rl/a**2) )
+    P_0 = 1/ (1 - np.exp(-2 * (Rl/a)**2) )
     
     # The peak intensity is then:
-    I_0 = 2*P_0/(np.pi * a**2)
+    I_0 = 2*P_0/(pi * a**2)
     
     # And the normalized intensity function is
     I = I_0 * np.exp(-2 * (r/a)**2)

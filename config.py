@@ -1,5 +1,5 @@
 import beam_profiles as bp
-# This file serves to specify the parameters of the simulation
+import numpy as np
 
 # Miscellaneous options
 # File into which the computed data will be written
