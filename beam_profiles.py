@@ -5,7 +5,7 @@ import numpy as np
 ### IMPORTANT NOTE: in your functions, always use the functions provided by numpy or compatible packages. For that, use e.g. np.sin(x), np.exp(x) etc.
 
 # This one is Gaussian with fixed polarization (spatially uniform polarization). Note how we access the optional arguments for the function
-# This function requires a 'p' argument that is a 2D numpy array that specifies the polarization in Jones' notation
+# This function requires a 'p' argument that is a 2D numpy array that specifies the polarization in Jones' notation and an 'a' argument that specifies the ratio between the beam waist (radius) and the radius of the lens.
 def gaussian_fixed(r, th, Rl, **kwargs):
     # The total number of rays in the simulation is necessary for constructing the right arrays later. Don't worry about it
     n_rays = len(r)
@@ -48,6 +48,45 @@ def gaussian_radial(r, th, Rl, **kwargs):
     
     # And the normalized intensity function is
     I = I_0 * np.exp(-2 * (r/a)**2)
+    
+    # The polarization is radial. We just make an array of appropriate dimensions here, no need to modify it
+    pol = np.array([np.cos(th), np.sin(th), np.zeros(r.shape)]).transpose()
+    
+    return np.hstack([I.reshape(-1,1), pol])
+
+# This one is TEM*01 with fixed polarization (spatially uniform polarization).
+# This function requires a 'p' argument that is a 2D numpy array that specifies the polarization in Jones' notation and an 'a' argument that specifies the ratio between the beam waist (radius) and the radius of the lens.
+def donut_fixed(r, th, Rl, **kwargs):
+    # The total number of rays in the simulation is necessary for constructing the right arrays later. Don't worry about it
+    n_rays = len(r)
+    
+    a = kwargs['a']
+    # The polarization is an external argument
+    p = np.hstack([kwargs['p'], 0])
+    
+    # Now we calculate the normalization:
+    N = np.pi/4 * (a**2 - np.exp(-2 * (Rl/a)**2) * (2*Rl**2 + a**2))
+    
+    # And the intensity function is
+    I = (r/a)**2 * np.exp(-2 * (r/a)**2) / N
+    # And the polarization is
+    pol = np.tile(p, (n_rays, 1))
+    
+    return np.hstack([I.reshape(-1,1), pol])
+
+# This one is TEM*01 with radial polarization.
+# This function only requires an 'a' argument that specifies the ratio between the beam waist (radius) and the radius of the lens.
+def donut_radial(r, th, Rl, **kwargs):
+    # The total number of rays in the simulation is necessary for constructing the right arrays later. Don't worry about it
+    n_rays = len(r)
+    
+    a = kwargs['a']
+    
+    # Now we calculate the normalization:
+    N = np.pi/4 * (a**2 - np.exp(-2 * (Rl/a)**2) * (2*Rl**2 + a**2))
+    
+    # And the intensity function is
+    I = (r/a)**2 * np.exp(-2 * (r/a)**2) / N
     
     # The polarization is radial. We just make an array of appropriate dimensions here, no need to modify it
     pol = np.array([np.cos(th), np.sin(th), np.zeros(r.shape)]).transpose()
