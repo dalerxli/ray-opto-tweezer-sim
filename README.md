@@ -6,6 +6,12 @@ This code is written in Python3+NumPy, which should make it easy to install and 
 
 The theoretical background for this code is described in Ashkin, 1992. Since I couldn't find the code used by Ashkin in his paper, I have decided to write this one.
 
+The results produced by earlier versions of this program were used in the following publications:
+
+- Galinskiy et al., "Measurement of particle motion in optical tweezers embedded in a Sagnac interferometer," Opt. Express
+- Galinskiy et al., "Counterpropagating Sagnac optical tweezers as an efficient method for 3D trapping in air," LAOP, OSA Technical Digest
+- Isaksson et al., "Manipulation of optically levitated particles", Proceedings of SPIE, Proc. SPIE 8810
+
 ### Current features
 - Calculation of the Q-factor (see Ashkin, 1992 for the definition) is done at a relatively high speed and with controllable precision. The Q factor is computed relatively to the power that passes through the lens (not the total incident power on the lens), as this approach seems to be more convenient.
 
