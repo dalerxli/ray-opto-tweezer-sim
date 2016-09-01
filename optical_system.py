@@ -216,24 +216,25 @@ class OpticalSystemSimple(OpticalSystem):
     def set_particle_center(self, c):
         self._c = np.array([np.array([0, 0, self._f]) + c])
         
-    # Generates the ray directions and origins for a list of r's and th's on the lens (assuming that all the rays are focused in the focal spot)
-    def _gen_ray_directions(self, r, th):
-        n_rays = len(r)
-        
-        self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
-        self._l = np.tile(np.array([0, 0, self._f]), (n_rays, 1)) - self._o
-        
-        # Normalize the rays's directions
-        self._l = normalize(self._l)      
-        
-        # Let know that the rays have been updated 
-        self._rays_updated = True        
+    # Generates the ray directions and origins for a list of r's and th's on the lens (assuming that all the rays are focused in the focal spot). Also generates the polarization vectors for all the rays (in child classes).
+    def _gen_rays(self, r, th):
+        if not self._rays_updated:
+            n_rays = len(r)
+            
+            self._o = np.array([r*np.cos(th), r*np.sin(th), np.zeros(n_rays)]).transpose()
+            self._l = np.tile(np.array([0, 0, self._f]), (n_rays, 1)) - self._o
+            
+            # Normalize the rays's directions
+            self._l = normalize(self._l)      
+            
+            # Let know that the rays have been updated 
+            self._rays_updated = True        
         
         return
     
     # Calculate forces for each and every ray. To be inherited and implemented in children classes
     def _total_ray_force(self, rs, ths):
-        _gen_ray_directions(rs, ths)
+        _gen_rays(rs, ths)
     
     # Integrates all the rays, dividing the lens radius by rsteps and the polar angle (2pi) into thsteps
     def integrate(self, rsteps, thsteps):
@@ -269,14 +270,19 @@ class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
     # Returns the total force by single rays (multiplied by r for polar integration)
     def _total_ray_force(self, r, th):
         n_rays = len(r)
-        super()._gen_ray_directions(r, th)
         
-        # Generate the polarization vectors and intensity for each ray
-        int_pol = self._Ipfun(r, th, self._Rl, **self._Ikw)
-        self._p = int_pol[:,1:]
-        I = int_pol[:,0]
+        if not self._rays_updated:
+            self._gen_rays(r, th)
+            
+            # Generate the polarization vectors and intensity for each ray (if this has not been done before)
+            int_pol = self._Ipfun(r, th, self._Rl, **self._Ikw)
+            self._p = int_pol[:,1:]
+            self._I = int_pol[:,0]
+            
+            # Let know that the rays have been updated 
+            self._rays_updated = True
         
         F = self._ray_force(self._p)
     
         # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
-        return (r*I).reshape(-1,1)*F
+        return (r*self._I).reshape(-1,1)*F
