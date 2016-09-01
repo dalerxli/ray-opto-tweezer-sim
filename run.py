@@ -64,7 +64,8 @@ xx, yy, zz = np.meshgrid(xs, ys, zs)
 positions = np.vstack([xx.flatten(), yy.flatten(), zz.flatten()]).transpose()
 
 # Initialize the system (the 0,0,0 initial position is just for completeness)
-opt = osys.OpticalSystemSimpleGaussian(np.array([0,0,0]), Rp, n, Rl, f, p, a)
+opt = osys.OpticalSystemSimpleArbitrary(np.array([0,0,0]), Rp, n, Rl, f, 
+                                        config.int_pol_function, **config.int_pol_arguments)
 
 # An auxiliary function for applying on each row
 def force(row):

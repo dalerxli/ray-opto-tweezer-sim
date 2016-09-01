@@ -1,3 +1,4 @@
+import beam_profiles as bp
 # This file serves to specify the parameters of the simulation
 
 # Miscellaneous options
@@ -12,22 +13,15 @@ radius = 1
 nr = 1.5
 
 ### Beam settings
+
+# First, we select an intensity/polarization function
+int_pol_function = bp.gaussian_fixed
+
+# And then specify the optional arguments for that function (like beam waist and polarization)
+int_pol_arguments = {'a': 1.0, 'p': np.array([1,0])}
+
 # Numerical aperture of the lens that is used to focus light onto the particle
 NA = 0.85
-
-# Polarization of the incoming light in Jones' notation (uncomment the option you'd like or write your own)
-
-# Circular polarization, where 1j means one imaginary unit. Note that "j" must _always_ be prepended by a number to have a correct format
-# p = (1,1j)
-
-# Linear polarization along the x axis
-p = (1,0)
-
-# Linear polarization along the y axis
-# p = (0,1)
-
-# The ratio between the radius of the Gaussian beam (beam waist) and the radius of the lens. If you want a uniform illumination of the lens, then set this to a large value (e.g. 1e3, which is shorthand for 1*10^3 = 1000).
-a = 1
 
 ### Integration settings
 # Number of steps into which the radial coordinate of the lens will be subdivided for integration
