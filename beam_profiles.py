@@ -37,7 +37,7 @@ def gaussian_radial(r, th, Rl, **kwargs):
     n_rays = len(r)
     
     # So is the beam width at the lens
-    a = kwargs['a']
+    a = kwargs['a']*Rl
     
     # First, we calculate the normalization:
     # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
@@ -60,7 +60,7 @@ def donut_fixed(r, th, Rl, **kwargs):
     # The total number of rays in the simulation is necessary for constructing the right arrays later. Don't worry about it
     n_rays = len(r)
     
-    a = kwargs['a']
+    a = kwargs['a']*Rl
     # The polarization is an external argument
     p = np.hstack([kwargs['p'], 0])
     
@@ -80,7 +80,7 @@ def donut_radial(r, th, Rl, **kwargs):
     # The total number of rays in the simulation is necessary for constructing the right arrays later. Don't worry about it
     n_rays = len(r)
     
-    a = kwargs['a']
+    a = kwargs['a']*Rl
     
     # Now we calculate the normalization:
     N = np.pi/4 * (a**2 - np.exp(-2 * (Rl/a)**2) * (2*Rl**2 + a**2))
