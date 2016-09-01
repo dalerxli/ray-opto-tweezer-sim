@@ -1,18 +1,17 @@
 # This file serves to specify the parameters of the simulation
 
 # Miscellaneous options
-[Config]
 # File into which the computed data will be written
-out_file = results.tsv
+out_file = "results.tsv"
 
-[Particle]
+### Particle settings
 # The radius of the particle. When the rays are focused in a single spot, it's not important (and can be set to unity for easier data interpretation), but for aberrated beams this does have an effect.
 radius = 1
 
 # The relative refractive index of the particle (index of the particle divided by the index of the medium)
 nr = 1.5
 
-[Beam]
+### Beam settings
 # Numerical aperture of the lens that is used to focus light onto the particle
 NA = 0.85
 
@@ -30,14 +29,14 @@ p = (1,0)
 # The ratio between the radius of the Gaussian beam (beam waist) and the radius of the lens. If you want a uniform illumination of the lens, then set this to a large value (e.g. 1e3, which is shorthand for 1*10^3 = 1000).
 a = 1
 
-[Integration]
+### Integration settings
 # Number of steps into which the radial coordinate of the lens will be subdivided for integration
 rsteps = 200
 
 # Number of steps into which the azimuthal coordinate of the lens will be subdivided for integration
 thsteps = 200
 
-[Positions]
+### Position settings
 # The range of positions (for each coordinate) on which the force will be calculated. The positions are relative to the focal point, and negative Z is closer to the lens. The positions are dimensional (i.e. measured in meters or whichever units you are using). It can be handy to set the particle radius to unity in order to have the positions in terms of it (which can be done without losing generality when all the rays are focused into a single spot).
 
 # If you wouldn't like to vary the x coordinate, just set xstart and xstop to the same value. xsteps will then be ignored

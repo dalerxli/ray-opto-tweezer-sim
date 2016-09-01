@@ -3,25 +3,19 @@
 import optical_system as osys
 import numpy as np
 
-# Imports for loading configuration files
-import configparser
-from ast import literal_eval as make_tuple # To easily convert strings to tuples
-config_file = "config.ini"
-
-config = configparser.ConfigParser()
-config.read(config_file)
-
+# Import the Python configuration file
+import config
 
 # Output file
-out_file = config["Config"]["out_file"]
+out_file = config.out_file
 
 # The radius of the particle will be taken as unity with no loss of generality.
-Rp = config["Particle"].getfloat("radius")
-n = config["Particle"].getfloat("nr")
+Rp = config.radius
+n = config.nr
 
 # The NA will be used for calculating the lens radius, though the pair lens radius-focal length can also be specified below
 # Note: if the NA is for liquid-immersion objective, then it should be divided by the index of that liquid (so that it's a number less than 1)
-NA = config["Beam"].getfloat("NA") # Thorlabs/Geltech C330TMD-A
+NA = config.NA
 
 f = 1e5*Rp # A lot to guarantee that the particle doesn't hit the lens (nothing horrible should happen, but still)
 
@@ -29,38 +23,36 @@ f = 1e5*Rp # A lot to guarantee that the particle doesn't hit the lens (nothing 
 Rl = f * np.tan(np.arcsin(NA))
 
 # And with it, the beam radius
-a = Rl * config["Beam"].getfloat("a")
+a = Rl * config.a
 
 # Polarization vector
-pi = make_tuple(config["Beam"]["p"])
-p = np.append(np.array(pi), 0)
+p = np.append(np.array(config.p), 0)
 
 # The first argument is the lowest x, the second is the highest x and the third is the number of steps to take.
 # If not iterating over x, then set it to 0, 0, 1 (or change 0 to the desired fixed value of x)
 # All the coordinates are zero when the particle is at the focus. Z decreases when the particle is closer to the lens.
-ranges = config["Positions"]
 
-xstart = ranges.getfloat("xstart")
-xstop = ranges.getfloat("xstop")
-xsteps = ranges.getfloat("xsteps")
+xstart = config.xstart
+xstop = config.xstop
+xsteps = config.xsteps
 
 if xstart == xstop:
     xsteps = 1
 xs = np.linspace(xstart, xstop, xsteps)
 
 # Same as above, for y
-ystart = ranges.getfloat("ystart")
-ystop = ranges.getfloat("ystop")
-ysteps = ranges.getfloat("ysteps")
+ystart = config.ystart
+ystop = config.ystop
+ysteps = config.ysteps
 
 if ystart == ystop:
     ysteps = 1
 ys = np.linspace(ystart, ystop, ysteps)
 
 # Same as above, for z
-zstart = ranges.getfloat("zstart")
-zstop = ranges.getfloat("zstop")
-zsteps = ranges.getfloat("zsteps")
+zstart = config.zstart
+zstop = config.zstop
+zsteps = config.zsteps
 
 if zstart == zstop:
     zsteps = 1
@@ -77,7 +69,7 @@ opt = osys.OpticalSystemSimpleGaussian(np.array([0,0,0]), Rp, n, Rl, f, p, a)
 # An auxiliary function for applying on each row
 def force(row):
     opt.set_particle_center(row)
-    force = opt.integrate(config["Integration"].getint("rsteps"), config["Integration"].getint("thsteps"))
+    force = opt.integrate(config.rsteps, config.thsteps)
     
     return force
 
