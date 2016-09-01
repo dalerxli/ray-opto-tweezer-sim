@@ -255,36 +255,6 @@ class OpticalSystemSimple(OpticalSystem):
         
         return Ft
     
-# A system where the intensity on the lens is Gaussian and all the rays are focused into a single spot
-class OpticalSystemSimpleGaussian(OpticalSystemSimple):
-    # omega is the beam size of the input Gaussian beam (assuming it has its waist on the lens)
-    def __init__(self, c, Rp, nr, Rl, f, p, omega):
-        self._omega = omega
-        super().__init__(c, Rp, nr, Rl, f, p)
-                
-    # Returns the total force by single rays (multiplied by r for polar integration)
-    def _total_ray_force(self, r, th):
-        n_rays = len(r)
-        super()._gen_ray_directions(r, th)
-        
-        # Make the polarization vectors have the correct dimension
-        self._p = np.tile(self._p_single, (n_rays, 1))
-        
-        F = self._ray_force(self._p)
-        
-        # Now we calculate the normalization:
-        # The total power passing through the aperture of the lens must be 1. Then, the total power of the full beam is
-        P_0 = 1/ (1 - np.exp(-2 * (self._Rl/self._omega)**2) )
-        # The peak intensity is then:
-        I_0 = 2*P_0/(np.pi* self._omega**2)
-        
-        # And the intensity function is
-        def I(r):
-            return I_0 * np.exp(-2 * (r/self._omega)**2)
-    
-        # The factor in parentheses is to have unit power and allow polar integration (that's why we multiply by r)
-        return (r*I(r)).reshape(-1,1)*F
-    
 # A system where the intensity on the lens and polarization (spatial) are arbitrary and all the rays are focused into a single spot
 class OpticalSystemSimpleArbitrary(OpticalSystemSimple):
     # Ifun is the intensity function that takes the (r, th) coordinates on the lens, the radius of lens and a number of optional keyword parameters. Note that this function must be normalized, i.e. its integral over all the lens must be equal to 1. Otherwise, incorrect results for the force will be calculated.
