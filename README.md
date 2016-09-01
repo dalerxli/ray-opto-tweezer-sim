@@ -9,7 +9,9 @@ The theoretical background for this code is described in Ashkin, 1992. Since I c
 ### Current features
 - Calculation of the Q-factor (see Ashkin, 1992 for the definition) is done at a relatively high speed and with controllable precision. The Q factor is computed relatively to the power that passes through the lens (not the total incident power on the lens), as this approach seems to be more convenient.
 
-- The program (now) accepts a TEM00 Gaussian beam with an arbitrary beam waist specified by the ratio between the beam waist and the lens radius. That way, by specifying the NA of the focusing lens, the cone of light is completely determined. In case if the Gaussian beam is significantly larger than the lens, it is clipped. That way, a uniform lens illumination can be considered by setting a to a large value (say, 1000), so that uniform illumination cases are also considered.
+- Arbitrary beam intensity profile that can be easily specified by the user. The code comes with predefined TEM00 (Gaussian) and TEM*01 (donut) modes (with controllable beam sizes).
+
+- Arbitrary spatial polarization profile to allow simulating e.g. radial polarization. Radial and linear polarizations come predefined in the code, but the user can specify any arbitrary spatial polarization.
 
 - Any spatially uniform polarization state of the incoming light is possible, such as linear polarization (e.g. *(1,0)* in Jones notation), circular (equivalent here to non-polarized), specified by *(1,1j)* where *j* is the imaginary unit. More general elliptic polarization states are also possible (equivalent here to arbitrary mixtures of p and s polarizations).
 
@@ -20,9 +22,6 @@ The theoretical background for this code is described in Ashkin, 1992. Since I c
 - Trustworthy calculations: an automated test suite (in `tests` subdirectory) verifies the operation of the code, beginning with the basics (Snell law and Fresnel coefficients implementation) and ending by the total force exerted on a particle. Where possible, the test suite ensures that the generated results are consistent with the published ones (again, with Ashkin, 1992). Special attention is paid to corner cases for each of the simulation functions in order to guarantee their correctness.
 
 ### Upcoming features
-- Arbitrary beam intensity profile that can be easily specified by the user.
-
-- Arbitrary spatial polarization profile to allow simulating e.g. radial polarization.
 
 - Multithreading support to speed things up on multi-core or multi-CPU machines.
 
@@ -68,4 +67,6 @@ If you see "No module named ..." errors, then check that you have installed your
 After a successful run, a "results.tsv" file will appear that contains the data. The first three columns are the coordinates of the particle and the next three are the force acting on the particle in this position. You can open it in nearly any software that can plot graphs (e.g. Excel, gnuplot, Mathematica and so on).
 
 ## Usage
-Now that the program works, you can modify the parameters you would like to in the file "config.ini". This file describes every parameter with detail, so just open it and have fun. After modifying "config.ini", just run `python3 run.sh` to generate data according to the new configuration. Careful to not overwrite previous data (you can change the output file in "config.ini").
+Now that the program works, you can modify the parameters you would like to in the file "config.py" (for general configuration) and "beam_profiles.py" (for specifying new intensity/polarization profiles). These files describe every parameter with detail, so just open them and have fun. After modifying "config.py" and/or "beam_profiles.py", just run `python3 run.sh` to generate data according to the new configuration.
+
+Be careful to not overwrite previous data (you can change the output file in "config.py").
