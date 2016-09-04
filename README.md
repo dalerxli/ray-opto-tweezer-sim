@@ -21,7 +21,7 @@ The results produced by earlier versions of this program were used in the follow
 
 - Any spatially uniform polarization state of the incoming light is possible, such as linear polarization (e.g. *(1,0)* in Jones notation), circular (equivalent here to non-polarized), specified by *(1,1j)* where *j* is the imaginary unit. More general elliptic polarization states are also possible (equivalent here to arbitrary mixtures of p and s polarizations).
 
-- Easy setting-up: all the simulation values and the output file are set in the amply-commented configuration file "config.ini".
+- Easy setting-up: all the simulation values and the output file are set in the amply-commented configuration file "config.py".
 
 - Particle positions to be evaluated are specified as ranges in each of the X,Y,Z coordinates, which allows to construct 1D, 2D and 3D force profiles with an arbitrary number of steps in each of the coordinates, while increasing the performance (some calculations can be recycled by the program).
 
